@@ -5,7 +5,7 @@
     "require": {
         "symfony/console": "^3.1"
     },
-    "license": "GPL2",
+    "license": "GPL-2.0",
     "authors": [
         {
             "name": "Matthew Grasmick",
