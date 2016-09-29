@@ -6,7 +6,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class CreateProject extends Command
+class CreateProject extends CommandBase
 {
   protected function configure()
   {
@@ -20,5 +20,6 @@ class CreateProject extends Command
   protected function execute(InputInterface $input, OutputInterface $output)
   {
     $output->writeln('Whoa there!');
+    // $this->getCloudApiClient('username', 'password');
   }
 }
