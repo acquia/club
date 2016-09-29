@@ -1,0 +1,22 @@
+{
+    "name": "acquia/blt-valet",
+    "description": "Allows BLT projects to be created or cloned from Acquia Cloud.",
+    "type": "library",
+    "require": {
+        "symfony/console": "^3.1"
+    },
+    "license": "GPL2",
+    "authors": [
+        {
+            "name": "Matthew Grasmick",
+            "email": "matthew.grasmick@acquia.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {"Acquia\\BltValet\\": "src/"}
+    },
+    "bin": [
+        "bin/bltvalet"
+    ]
+}
