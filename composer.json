@@ -4,7 +4,8 @@
     "type": "library",
     "require": {
         "symfony/console": "^3.1",
-        "acquia/acquia-sdk-php-cloud-api": "^0.10.7"
+        "acquia/acquia-sdk-php-cloud-api": "^0.10.7",
+        "symfony/yaml": "^3.1"
     },
     "license": "GPL-2.0",
     "authors": [
