@@ -1,0 +1,13 @@
+<?php
+{% for alias in aliases %}
+// Site {{alias["ac-site"]}} environment {{alias["env-name"]}}
+$aliases['{{alias["ac-env"]}}'] = array(
+  'root' => '{{alias["root"]}}',
+  'ac-site' => '{{alias["ac-site"]}}',
+  'ac-env' => '{{alias["env-name"]}}',
+  'ac-realm' => '{{alias["ac-realm"]}}',
+  'uri' => '{{alias["uri"]}}',
+  'remote-host' => '{{alias["remote-host"]}}',
+  'remote-user' => '{{alias["remote-user"]}}',
+);
+{% endfor %}

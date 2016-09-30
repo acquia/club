@@ -25,6 +25,10 @@ abstract class CommandBase extends Command
   /**
    * @var string
    */
+  protected $drushAliasDir;
+  /**
+   * @var string
+   */
   protected $cloudConfDir;
   /**
    * @var string
@@ -65,6 +69,7 @@ abstract class CommandBase extends Command
     $this->output = $output;
     $this->fs = new Filesystem();
     $this->cloudConfDir = $_SERVER['HOME'] . '/.acquia';
+    $this->drushAliasDir = $_SERVER['HOME'] . '/.drush';
     $this->cloudConfFileName = 'cloudapi.conf';
     $this->cloudConfFilePath = $this->cloudConfDir . '/' . $this->cloudConfFileName;
     $this->cloudApiConfig = $this->loadCloudApiConfig();
