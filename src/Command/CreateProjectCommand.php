@@ -2,6 +2,7 @@
 
 namespace Acquia\BltValet\Command;
 
+use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
@@ -20,35 +21,102 @@ class CreateProjectCommand extends CommandBase
 
   protected function execute(InputInterface $input, OutputInterface $output)
   {
+    $helper = $this->getHelper('question');
+    $answers = [];
+
+    if (extension_loaded('xdebug')) {
+      $this->output->writeln("<comment>You have xDebug enabled. This will make everything very slow. You should really disable it.</comment>");
+      $question = new ConfirmationQuestion('<comment>Do you want to continue?</comment> ', true);
+
+      $continue = $helper->ask($input, $output, $question);
+
+      if (!$continue) {
+        return FALSE;
+      }
+    }
+
+    if ($this->fs->exists('.git')) {
+      $formatter = $this->getHelper('formatter');
+      $errorMessages = [
+        "It looks like you're currently inside of a git repository.",
+        "You can't create a new project inside of a repository.",
+        'Please change directories and try again.',
+      ];
+      $formattedBlock = $formatter->formatBlock($errorMessages, 'error');
+      $output->writeln($formattedBlock);
+
+      return FALSE;
+    }
 
     $this->output->writeln("<info>Let's start by entering some information about your project.</info>");
 
-    $helper = $this->getHelper('question');
-    $question = new Question('<question>Project human name:</question> ');
-    $human_name = $helper->ask($input, $output, $question);
+    $question = new Question('<question>Project title (human readable):</question> ');
+    $this->requireQuestion($question);
+    $answers['title'] = $helper->ask($input, $output, $question);
 
-    $default_machine_name = self::convertStringMachineSafe($human_name);
-    $question = new Question("<question>Project machine name:</question> <info>[$default_machine_name]</info>", $default_machine_name);
-    $machine_name = $helper->ask($input, $output, $question);
+    $default_machine_name = self::convertStringToMachineSafe($answers['title']);
+    $question = new Question("<question>Project machine name:</question> <info>[$default_machine_name]</info> ", $default_machine_name);
+    $answers['machine_name'] = $helper->ask($input, $output, $question);
 
-    $question = new Question('<question>Project prefix:</question> ');
-    $prefix = $helper->ask($input, $output, $question);
+    $destination_dir = getcwd() . '/' . $answers['machine_name'];
+    if ($this->fs->exists($destination_dir)) {
+      $this->output->writeln("<comment>Uh oh. The destination directory already exists.</comment>");
+      $question = new ConfirmationQuestion("<comment>Delete $destination_dir?</comment> ", false);
+      $delete_dir = $helper->ask($input, $output, $question);
+      if ($delete_dir) {
+        $this->fs->remove($destination_dir);
+      }
+      else {
+        $output->writeln("<comment>Please choose a different machine name for your project, or change directories.</comment>");
+        return FALSE;
+      }
+    }
 
-    $this->output->writeln("<info>Great. Now let's make some choices about how your project will be set up.");
-    $question = new ConfirmationQuestion('<question>Do you want to create a VM?</question> ', true);
-    $vm = $helper->ask($input, $output, $question);
+    $default_prefix = self::convertStringToPrefix($answers['title']);
+    $question = new Question("<question>Project prefix:</question> <info>[$default_prefix]</info>", $default_prefix);
+    $answers['prefix'] = $helper->ask($input, $output, $question);
 
-//    $question = new ConfirmationQuestion('<question>Do you want to create an Acquia Cloud free tier site for this project?</question> ', false);
-//    $create_acf_site = $helper->ask($input, $output, $question);
-//
-//    -> composer create-project blt-project:~8 [machine_name] --no-interaction
-//    -> cd [machine_name]
-//    -> modify project.yml
-//    -> composer blt-alias
-//    -> ./vendor/bin/blt vm
-//    -> ./vendor/bin/blt local:setup
-//    -> createAcfSite()
-//
+    $this->output->writeln("<info>Great. Now let's make some choices about how your project will be set up.</info>");
+    $question = new ConfirmationQuestion('<question>Do you want to create a VM?</question> <info>[yes]</info> ', true);
+    $answers['vm'] = $helper->ask($input, $output, $question);
+
+    // $question = new ConfirmationQuestion('<question>Do you want to create an Acquia Cloud free tier site for this project?</question> ', false);
+    // $create_acf_site = $helper->ask($input, $output, $question);
+
+    $this->output->writeln("<comment>You have entered the following values:</comment>");
+    $this->printArrayAsTable($answers);
+    $question = new ConfirmationQuestion('<question>Create new project now?</question> ', true);
+    $create = $helper->ask($input, $output, $question);
+
+    if ($create) {
+      $this->output->writeln("<info>Awesome. Let's create your project. This could take a while...");
+
+      $this->executeCommands([
+        "composer create-project acquia/blt-project:~8 {$answers['machine_name']} --no-interaction",
+      ]);
+
+      $cwd = getcwd() . '/' . $answers['machine_name'];
+
+      // -> modify project.yml
+
+      if ($answers['vm']) {
+        $this->executeCommands([
+          "./vendor/bin/blt vm",
+          "./vendor/bin/blt local:setup",
+        ], $cwd);
+      }
+    }
+
+  }
+
+  public static function convertStringToPrefix($string) {
+    $words = explode(' ', $string);
+    $prefix = '';
+    foreach ($words as $word) {
+      $prefix .= substr($word, 0, 1);
+    }
+
+    return strtoupper($prefix);
   }
 
   /**
@@ -57,7 +125,7 @@ class CreateProjectCommand extends CommandBase
    *
    * @return mixed
    */
-  public static function convertStringMachineSafe($identifier, array $filter = array(
+  public static function convertStringToMachineSafe($identifier, array $filter = array(
     ' ' => '_',
     '-' => '_',
     '/' => '_',
@@ -82,5 +150,35 @@ class CreateProjectCommand extends CommandBase
     ), array('_', '__'), $identifier);
 
     return strtolower($identifier);
+  }
+
+  protected function requireQuestion(Question $question) {
+    $question->setValidator(function ($value) {
+      if (trim($value) == '') {
+        throw new \Exception('You must enter a value.');
+      }
+      return $value;
+    });
+  }
+
+  protected function printArrayAsTable($array) {
+    $rowGenerator = function() use ($array) {
+      $rows = [];
+      foreach ($array as $key => $value) {
+        if ($value == '1') {
+          $value = 'yes';
+        }
+        elseif ($value == '0') {
+          $value = 'no';
+        }
+        $rows[] = [$key, $value];
+      }
+      return $rows;
+    };
+
+    $table = new Table($this->output);
+    $table->setHeaders(array('Property', 'Value'))
+      ->setRows($rowGenerator())
+      ->render();
   }
 }

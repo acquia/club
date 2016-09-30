@@ -18,7 +18,7 @@ class PullProjectCommand extends CommandBase
       ->setHelp("This command allows you to pull projects...")
     ;
   }
-
+  
   protected function execute(InputInterface $input, OutputInterface $output)
   {
     $config = $this->getCloudApiConfig();

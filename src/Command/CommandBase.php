@@ -5,6 +5,8 @@ namespace Acquia\BltValet\Command;
 use Acquia\BltValet\Loader\JsonFileLoader;
 use Symfony\Component\Config\Loader\DelegatingLoader;
 use Symfony\Component\Config\Loader\LoaderResolver;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Process\Process;
 use Symfony\Component\Yaml\Yaml;
 use Acquia\Cloud\Api\CloudApiClient;
 use Symfony\Component\Config\FileLocator;
@@ -36,6 +38,10 @@ abstract class CommandBase extends Command
    * @var array
    */
   private $cloudApiConfig;
+
+  /** @var Filesystem */
+  protected $fs;
+
   /**
    * @var InputInterface
    */
@@ -57,6 +63,7 @@ abstract class CommandBase extends Command
   protected function initialize(InputInterface $input, OutputInterface $output) {
     $this->input = $input;
     $this->output = $output;
+    $this->fs = new Filesystem();
     $this->cloudConfDir = $_SERVER['HOME'] . '/.acquia';
     $this->cloudConfFileName = 'cloudapi.conf';
     $this->cloudConfFilePath = $this->cloudConfDir . '/' . $this->cloudConfFileName;
@@ -167,6 +174,35 @@ abstract class CommandBase extends Command
     $sites = $cloudApiClient->sites();
     foreach ($sites as $site) {
       $this->output->writeln($site->name());
+    }
+  }
+
+  /**
+   * @param string $command
+   *
+   * @return bool
+   */
+  protected function executeCommand($command, $cwd = null) {
+    $timeout = 2000;
+    $env = [
+      'COMPOSER_PROCESS_TIMEOUT' => $timeout
+    ] + $_ENV;
+    $process = new Process($command, $cwd, $env, null, $timeout);
+    $process->setTty(true);
+    $process->mustRun(function ($type, $buffer) {
+      print $buffer;
+    });
+
+    return $process->isSuccessful();
+  }
+  /**
+   * @param $command
+   *
+   * @return bool
+   */
+  protected function executeCommands($commands = [], $cwd = null) {
+    foreach ($commands as $command) {
+      $this->executeCommand($command, $cwd);
     }
   }
 }
