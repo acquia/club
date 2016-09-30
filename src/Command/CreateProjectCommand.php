@@ -3,13 +3,23 @@
 namespace Acquia\BltValet\Command;
 
 use Symfony\Component\Console\Helper\Table;
+use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
+use Symfony\Component\Yaml\Yaml;
 
+/**
+ * Class CreateProjectCommand
+ *
+ * @package Acquia\BltValet\Command
+ */
 class CreateProjectCommand extends CommandBase
 {
+  /**
+   *
+   */
   protected function configure()
   {
     $this
@@ -19,6 +29,12 @@ class CreateProjectCommand extends CommandBase
     ;
   }
 
+  /**
+   * @param \Symfony\Component\Console\Input\InputInterface $input
+   * @param \Symfony\Component\Console\Output\OutputInterface $output
+   *
+   * @return bool
+   */
   protected function execute(InputInterface $input, OutputInterface $output)
   {
     $helper = $this->getHelper('question');
@@ -48,13 +64,15 @@ class CreateProjectCommand extends CommandBase
       return FALSE;
     }
 
+    $this->checkSystemRequirements();
+
     $this->output->writeln("<info>Let's start by entering some information about your project.</info>");
 
     $question = new Question('<question>Project title (human readable):</question> ');
     $this->requireQuestion($question);
-    $answers['title'] = $helper->ask($input, $output, $question);
+    $answers['human_name'] = $helper->ask($input, $output, $question);
 
-    $default_machine_name = self::convertStringToMachineSafe($answers['title']);
+    $default_machine_name = self::convertStringToMachineSafe($answers['human_name']);
     $question = new Question("<question>Project machine name:</question> <info>[$default_machine_name]</info> ", $default_machine_name);
     $answers['machine_name'] = $helper->ask($input, $output, $question);
 
@@ -72,7 +90,7 @@ class CreateProjectCommand extends CommandBase
       }
     }
 
-    $default_prefix = self::convertStringToPrefix($answers['title']);
+    $default_prefix = self::convertStringToPrefix($answers['human_name']);
     $question = new Question("<question>Project prefix:</question> <info>[$default_prefix]</info>", $default_prefix);
     $answers['prefix'] = $helper->ask($input, $output, $question);
 
@@ -96,19 +114,53 @@ class CreateProjectCommand extends CommandBase
       ]);
 
       $cwd = getcwd() . '/' . $answers['machine_name'];
-
-      // -> modify project.yml
+      $config_file = $cwd . '/project.yml';
+      $config = Yaml::parse(file_get_contents($config_file));
+      $config['project']['prefix'] = $answers['prefix'];
+      $config['project']['machine_name'] = $answers['machine_name'];
+      $config['project']['human_name'] = $answers['human_name'];
+      // Hostname cannot contain underscores.
+      $machine_name_safe = str_replace('_', '-', $answers['machine_name']);
+      $config['project']['local']['hostname'] = str_replace('${project.machine_name}', $machine_name_safe, $config['project']['local']['hostname']);
+      $this->fs->dumpFile($config_file, Yaml::dump($config));
 
       if ($answers['vm']) {
         $this->executeCommands([
           "./vendor/bin/blt vm",
           "./vendor/bin/blt local:setup",
+          "./vendor/bin/drush @{$answers['machine_name']}.local uli",
         ], $cwd);
+        $this->output->writeln();
+      }
+      else {
+        $this->output->writeln();
       }
     }
-
   }
 
+  /**
+   * @return bool
+   * @throws \Symfony\Component\Console\Exception\ExceptionInterface
+   */
+  protected function checkSystemRequirements() {
+    $this->output->writeln("Checking your machine against system requirements...");
+    $command = $this->getApplication()->find('check-requirements');
+    $returnCode = $command->run($this->input, $this->output);
+    if ($returnCode == 0) {
+      $this->output->writeln("Looks good.");
+    }
+    else {
+      $this->output->writeln("Your machine does not meet the system requirements.");
+
+      return FALSE;
+    }
+  }
+
+  /**
+   * @param $string
+   *
+   * @return mixed
+   */
   public static function convertStringToPrefix($string) {
     $words = explode(' ', $string);
     $prefix = '';
@@ -152,6 +204,9 @@ class CreateProjectCommand extends CommandBase
     return strtolower($identifier);
   }
 
+  /**
+   * @param \Symfony\Component\Console\Question\Question $question
+   */
   protected function requireQuestion(Question $question) {
     $question->setValidator(function ($value) {
       if (trim($value) == '') {
@@ -161,6 +216,9 @@ class CreateProjectCommand extends CommandBase
     });
   }
 
+  /**
+   * @param $array
+   */
   protected function printArrayAsTable($array) {
     $rowGenerator = function() use ($array) {
       $rows = [];

@@ -182,18 +182,25 @@ abstract class CommandBase extends Command
    *
    * @return bool
    */
-  protected function executeCommand($command, $cwd = null) {
+  protected function executeCommand($command, $cwd = null, $display_output = true) {
     $timeout = 2000;
     $env = [
       'COMPOSER_PROCESS_TIMEOUT' => $timeout
     ] + $_ENV;
     $process = new Process($command, $cwd, $env, null, $timeout);
-    $process->setTty(true);
-    $process->mustRun(function ($type, $buffer) {
-      print $buffer;
+    //$process->setTty(true);
+    $process->mustRun(function ($type, $buffer) use (&$display_output) {
+      if ($display_output) {
+        print $buffer;
+      }
     });
 
-    return $process->isSuccessful();
+    if ($display_output) {
+      return $process->isSuccessful();
+    }
+    else {
+      return $process->getOutput();
+    }
   }
   /**
    * @param $command
