@@ -41,6 +41,19 @@ class CheckRequirementsCommand extends CommandBase
 
   protected function execute(InputInterface $input, OutputInterface $output)
   {
+
+    if (empty($_ENV)) {
+      $formatter = $this->getHelper('formatter');
+      $errorMessages = [
+        "Your PHP installation is not configured to support environmental variables.",
+        "Please ensure that you variable_order setting for PHP contains an \"E\".",
+      ];
+      $formattedBlock = $formatter->formatBlock($errorMessages, 'error');
+      $output->writeln($formattedBlock);
+
+      return 1;
+    }
+
     $required_binaries = [
       'composer',
       'vagrant',
@@ -51,8 +64,9 @@ class CheckRequirementsCommand extends CommandBase
     ];
 
     // @todo Show missing requirements before installing.
-    
     $this->checkRequirements($required_binaries);
+
+    return TRUE;
   }
 
   protected function checkRequirements($binaries) {

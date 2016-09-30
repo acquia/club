@@ -47,7 +47,7 @@ class CreateProjectCommand extends CommandBase
       $continue = $helper->ask($input, $output, $question);
 
       if (!$continue) {
-        return FALSE;
+        return 1;
       }
     }
 
@@ -61,10 +61,12 @@ class CreateProjectCommand extends CommandBase
       $formattedBlock = $formatter->formatBlock($errorMessages, 'error');
       $output->writeln($formattedBlock);
 
-      return FALSE;
+      return 1;
     }
 
-    $this->checkSystemRequirements();
+    if (!$this->checkSystemRequirements()) {
+      return 1;
+    }
 
     $this->output->writeln("<info>Let's start by entering some information about your project.</info>");
 
@@ -86,7 +88,7 @@ class CreateProjectCommand extends CommandBase
       }
       else {
         $output->writeln("<comment>Please choose a different machine name for your project, or change directories.</comment>");
-        return FALSE;
+        return 1;
       }
     }
 
@@ -148,6 +150,8 @@ class CreateProjectCommand extends CommandBase
     $returnCode = $command->run($this->input, $this->output);
     if ($returnCode == 0) {
       $this->output->writeln("Looks good.");
+
+      return TRUE;
     }
     else {
       $this->output->writeln("Your machine does not meet the system requirements.");
