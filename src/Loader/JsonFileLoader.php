@@ -1,6 +1,6 @@
 <?php
 
-namespace Acquia\BltValet\Loader;
+namespace Acquia\Club\Loader;
 
 use Symfony\Component\Config\Loader\FileLoader;
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace Acquia\BltValet\Command;
+namespace Acquia\Club\Command;
 
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\ArrayInput;
@@ -15,7 +15,7 @@ const MACOSX = 33;
 /**
  * Class CreateProjectCommand
  *
- * @package Acquia\BltValet\Command
+ * @package Acquia\Club\Command
  */
 class CreateProjectCommand extends CommandBase
 {

@@ -22,9 +22,9 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "autoload": {
-        "psr-4": {"Acquia\\BltValet\\": "src/"}
+        "psr-4": {"Acquia\\Club\\": "src/"}
     },
     "bin": [
-        "bin/bltvalet"
+        "bin/club"
     ]
 }

@@ -3,10 +3,10 @@
 set_time_limit(0);
 require __DIR__ . '/vendor/autoload.php';
 
-use Acquia\BltValet\Command\CheckRequirementsCommand;
-use Acquia\BltValet\Command\CreateProjectCommand;
-use Acquia\BltValet\Command\PullProjectCommand;
-use Acquia\BltValet\Command\AcAliasesCommand;
+use Acquia\Club\Command\CheckRequirementsCommand;
+use Acquia\Club\Command\CreateProjectCommand;
+use Acquia\Club\Command\PullProjectCommand;
+use Acquia\Club\Command\AcAliasesCommand;
 use Symfony\Component\Console\Application;
 
 $application = new Application();

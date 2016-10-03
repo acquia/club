@@ -1,8 +1,8 @@
 <?php
 
-namespace Acquia\BltValet\Command;
+namespace Acquia\Club\Command;
 
-use Acquia\BltValet\Loader\JsonFileLoader;
+use Acquia\Club\Loader\JsonFileLoader;
 use Symfony\Component\Config\Loader\DelegatingLoader;
 use Symfony\Component\Config\Loader\LoaderResolver;
 use Symfony\Component\Filesystem\Filesystem;
@@ -18,7 +18,7 @@ use Symfony\Component\Console\Question\Question;
 /**
  * Class CommandBase
  *
- * @package Acquia\BltValet\Command
+ * @package Acquia\Club\Command
  */
 abstract class CommandBase extends Command
 {

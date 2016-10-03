@@ -1,6 +1,6 @@
 <?php
 
-namespace Acquia\BltValet\Command;
+namespace Acquia\Club\Command;
 
 use Acquia\Cloud\Api\CloudApiClient;
 use Acquia\Cloud\Api\Response\SiteNames;
