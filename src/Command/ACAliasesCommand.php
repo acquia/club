@@ -13,7 +13,7 @@ use Symfony\Component\Console\Helper\ProgressBar;
 use Twig_Environment;
 use Twig_Loader_Filesystem;
 
-class ACAliasesCommand extends CommandBase
+class AcAliasesCommand extends CommandBase
 {
 
   /** @var CloudApiClient */
@@ -41,18 +41,27 @@ class ACAliasesCommand extends CommandBase
     $progress->setFormat("<info><fg=white;bg=blue>%current%/%max% [%bar%] %percent:3s%% \n %message%</>");
     $progress->setMessage('Starting Aliases sync...');
     $this->output->writeln("<info>Found " . $sitesCount . " subscription(s). Gathering information about each.</info>");
+    $errors = [];
     foreach ($sites as $site) {
       $progress->setMessage('Syncing: ' . $site);
       try {
         $this->getSiteAliases($site, $progress);
       }
       catch (\Exception $e) {
-        $output->writeln("<error>Could not fetch alias data for $site.</error>");
+        $errors[] = "Could not fetch alias data for $site.";
       }
       $progress->advance();
     }
     $progress->setMessage("Syncing: complete. \n");
     $progress->finish();
+    $output->writeln("");
+
+    if ($errors) {
+      $formatter = $this->getHelper('formatter');
+      $formattedBlock = $formatter->formatBlock($errors, 'error');
+      $output->writeln($formattedBlock);
+    }
+
     $this->output->writeln("<info>Aliases were written to, type 'drush sa' to see them.");
   }
 
