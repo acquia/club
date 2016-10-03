@@ -54,6 +54,7 @@ class CheckRequirementsCommand extends CommandBase
       return 1;
     }
 
+    // @todo Check versions!
     $required_binaries = [
       'composer',
       'vagrant',
@@ -63,54 +64,109 @@ class CheckRequirementsCommand extends CommandBase
       'git',
     ];
 
-    // @todo Show missing requirements before installing.
-    $this->checkRequirements($required_binaries);
 
-    return TRUE;
+    $missing_requirements = $this->getMissingRequirements($required_binaries);
+    $this->installRequirements($missing_requirements);
+
+    $this->output->writeln('');
+
+    return 0;
   }
 
-  protected function checkRequirements($binaries) {
+  protected function installRequirements($binaries) {
     foreach ($binaries as $binary) {
-      $this->checkRequirement($binary);
-    }
-  }
-
-  protected function checkRequirement($binary) {
-    if (!$this->commandExists($binary)) {
       $this->installRequirement($binary);
     }
   }
 
+  protected function getMissingRequirements($binaries) {
+    $missing = [];
+    foreach ($binaries as $binary) {
+      if (!$this->checkRequirement($binary)) {
+        $missing[] = $binary;
+        $this->output->writeln("<comment>$binary is not installed.</comment>");
+      }
+      else {
+        $this->output->writeln("<info>$binary is already installed.</info>");
+      }
+    }
+
+    return $missing;
+  }
+
+  protected function checkRequirement($binary) {
+    return $this->commandExists($binary);
+  }
+
   protected function commandExists($bin) {
-    return $this->executeCommand("command -v $bin", null, false);
+    return $this->executeCommand("command -v $bin", null, false, false);
   }
 
   protected function installRequirement($requirement) {
-    $method_name = 'install' . ucfirst($requirement);
-    if (method_exists($this, $method_name)) {
-      $this->{"install$requirement"}();
+    if (!$this->checkRequirement($requirement)) {
+      $method_name = 'install' . ucfirst($requirement);
+      if (method_exists($this, $method_name)) {
+        $this->output->writeln("<comment>Attempting to install $requirement...</comment>");
+        $this->{"install$requirement"}();
+      }
     }
   }
 
   protected function installComposer() {
-    if ($this->os->getType() == 'MACOSX') {
-      $this->checkRequirement('homebrew');
-      $this->executeCommand('brew install composer');
+    switch ($this->os->getType() == MACOSX) {
+      case 'OSX':
+        $this->brewInstall('composer');
+        break;
     }
   }
 
   protected function installAnsible() {
-    if ($this->os->getType() == 'MACOSX') {
-      $this->checkRequirement('homebrew');
-      $this->executeCommand('brew install ansible');
+    switch ($this->os->getType() == MACOSX) {
+      case 'OSX':
+        $this->brewInstall('ansible');
+        break;
     }
   }
 
   protected function installVirtualBox() {
-    if ($this->os->getType() == 'MACOSX') {
-      $this->checkRequirement('homebrew');
-      $this->executeCommand('brew install virtualbox');
+    switch ($this->os->getType() == MACOSX) {
+      case 'OSX':
+        $this->brewInstall('virtualbox');
+        break;
     }
+  }
+
+  protected function installVagrant() {
+    switch ($this->os->getType() == MACOSX) {
+      case 'OSX':
+        $this->brewInstall('vagrant');
+        break;
+    }
+  }
+
+  protected function installDrush() {
+    switch ($this->os->getType() == MACOSX) {
+      case 'OSX':
+        $this->brewInstall('drush');
+        break;
+    }
+  }
+
+  protected function installGit() {
+    switch ($this->os->getType() == MACOSX) {
+      case 'OSX':
+        $this->brewInstall('git');
+        break;
+    }
+  }
+
+  protected function brewInstall($formula) {
+    $this->checkRequirement('homebrew');
+    // @todo check for brew cask.
+    $success = $this->executeCommand("brew install $formula");
+    $this->output->writeln("<info>Installed $formula successfully.</info>");
+
+    return $success;
   }
 
   protected function installHomebrew() {
