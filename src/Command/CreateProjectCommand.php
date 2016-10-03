@@ -10,6 +10,8 @@ use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Yaml\Yaml;
 
+const MACOSX = 33;
+
 /**
  * Class CreateProjectCommand
  *
@@ -148,16 +150,8 @@ class CreateProjectCommand extends CommandBase
     $this->output->writeln("Checking your machine against system requirements...");
     $command = $this->getApplication()->find('check-requirements');
     $returnCode = $command->run($this->input, $this->output);
-    if ($returnCode == 0) {
-      $this->output->writeln("Looks good.");
 
-      return TRUE;
-    }
-    else {
-      $this->output->writeln("Your machine does not meet the system requirements.");
-
-      return FALSE;
-    }
+    return $returnCode == 0;
   }
 
   /**
