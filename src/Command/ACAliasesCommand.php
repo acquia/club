@@ -53,10 +53,11 @@ class AcAliasesCommand extends CommandBase
     foreach ($sites as $site) {
       $progress->setMessage('Syncing: ' . $site);
       try {
-        $this->getSiteAliases($site, $progress);
+        $this->getSiteAliases($site);
       }
       catch (\Exception $e) {
         $errors[] = "Could not fetch alias data for $site.";
+        // @todo Log error message.
       }
       $progress->advance();
     }

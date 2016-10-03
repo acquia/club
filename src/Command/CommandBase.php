@@ -5,6 +5,8 @@ namespace Acquia\Club\Command;
 use Acquia\Club\Loader\JsonFileLoader;
 use Symfony\Component\Config\Loader\DelegatingLoader;
 use Symfony\Component\Config\Loader\LoaderResolver;
+use Symfony\Component\Console\Helper\QuestionHelper;
+use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Yaml\Yaml;
@@ -55,6 +57,9 @@ abstract class CommandBase extends Command
    */
   protected $output;
 
+  /** @var QuestionHelper */
+  protected $questionHelper;
+
   /**
    * Initializes the command just after the input has been validated.
    *
@@ -67,12 +72,22 @@ abstract class CommandBase extends Command
   protected function initialize(InputInterface $input, OutputInterface $output) {
     $this->input = $input;
     $this->output = $output;
+    $this->questionHelper = $this->getHelper('question');
     $this->fs = new Filesystem();
     $this->cloudConfDir = $_SERVER['HOME'] . '/.acquia';
     $this->drushAliasDir = $_SERVER['HOME'] . '/.drush';
     $this->cloudConfFileName = 'cloudapi.conf';
     $this->cloudConfFilePath = $this->cloudConfDir . '/' . $this->cloudConfFileName;
     $this->cloudApiConfig = $this->loadCloudApiConfig();
+  }
+
+  protected function xDebugPrompt() {
+    if (extension_loaded('xdebug')) {
+      $this->output->writeln("<comment>You have xDebug enabled. This will make everything very slow. You should really disable it.</comment>");
+      $question = new ConfirmationQuestion('<comment>Do you want to continue?</comment> ', true);
+
+      return $this->questionHelper->ask($this->input, $this->output, $question);
+    }
   }
 
   /**
@@ -170,6 +185,64 @@ abstract class CommandBase extends Command
       $this->output->writeln("<error>Failed to authenticate with Acquia Cloud API.</error>");
       return NULL;
     }
+  }
+
+  protected function getSite(CloudApiClient $cloud_api_client, $site_id) {
+    return $cloud_api_client->site($site_id);
+  }
+
+  protected function getSites(CloudApiClient $cloud_api_client) {
+    $sites = $cloud_api_client->sites();
+    $sites_filtered = [];
+
+    foreach ($sites as $key => $site) {
+      $label = $this->getSiteLabel($site);
+      if ($label !== '*') {
+        $sites_filtered[(string) $site] = $site;
+      }
+    }
+
+    return $sites_filtered;
+
+  }
+  protected function getSiteLabel($site) {
+    $site_slug = (string) $site;
+    $site_split = explode(':', $site_slug);
+
+    return $site_split[1];
+  }
+
+  protected function getSitesList(CloudApiClient $cloud_api_client) {
+    $site_list = [];
+    $sites = $this->getSites($cloud_api_client);
+    foreach ($sites as $site) {
+      $site_list[] = $this->getSiteLabel($site);
+    }
+    sort($site_list, SORT_NATURAL | SORT_FLAG_CASE);
+
+    return $site_list;
+  }
+
+  protected function getSiteByLabel(CloudApiClient $cloud_api_client, $label) {
+    $sites = $this->getSites($cloud_api_client);
+    foreach ($sites as $site_id) {
+      if ($this->getSiteLabel($site_id) == $label) {
+        $site = $this->getSite($cloud_api_client, $site_id);
+        return $site;
+      }
+    }
+
+    return NULL;
+  }
+
+  protected function getEnvironmentsList(CloudApiClient $cloud_api_client, $site) {
+    $environments = $cloud_api_client->environments($site);
+    $environments_list = [];
+    foreach ($environments as $environment) {
+      $environments_list[] = $environment->name();
+    }
+
+    return $environments_list;
   }
 
   /**

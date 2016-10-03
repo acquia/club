@@ -39,18 +39,10 @@ class CreateProjectCommand extends CommandBase
    */
   protected function execute(InputInterface $input, OutputInterface $output)
   {
-    $helper = $this->getHelper('question');
     $answers = [];
 
-    if (extension_loaded('xdebug')) {
-      $this->output->writeln("<comment>You have xDebug enabled. This will make everything very slow. You should really disable it.</comment>");
-      $question = new ConfirmationQuestion('<comment>Do you want to continue?</comment> ', true);
-
-      $continue = $helper->ask($input, $output, $question);
-
-      if (!$continue) {
-        return 1;
-      }
+    if (!$this->xDebugPrompt()) {
+      return 1;
     }
 
     if ($this->fs->exists('.git')) {
@@ -74,17 +66,17 @@ class CreateProjectCommand extends CommandBase
 
     $question = new Question('<question>Project title (human readable):</question> ');
     $this->requireQuestion($question);
-    $answers['human_name'] = $helper->ask($input, $output, $question);
+    $answers['human_name'] = $this->questionHelper->ask($input, $output, $question);
 
     $default_machine_name = self::convertStringToMachineSafe($answers['human_name']);
     $question = new Question("<question>Project machine name:</question> <info>[$default_machine_name]</info> ", $default_machine_name);
-    $answers['machine_name'] = $helper->ask($input, $output, $question);
+    $answers['machine_name'] = $this->questionHelper->ask($input, $output, $question);
 
     $destination_dir = getcwd() . '/' . $answers['machine_name'];
     if ($this->fs->exists($destination_dir)) {
       $this->output->writeln("<comment>Uh oh. The destination directory already exists.</comment>");
       $question = new ConfirmationQuestion("<comment>Delete $destination_dir?</comment> ", false);
-      $delete_dir = $helper->ask($input, $output, $question);
+      $delete_dir = $this->questionHelper->ask($input, $output, $question);
       if ($delete_dir) {
         $this->fs->remove($destination_dir);
       }
@@ -96,11 +88,11 @@ class CreateProjectCommand extends CommandBase
 
     $default_prefix = self::convertStringToPrefix($answers['human_name']);
     $question = new Question("<question>Project prefix:</question> <info>[$default_prefix]</info>", $default_prefix);
-    $answers['prefix'] = $helper->ask($input, $output, $question);
+    $answers['prefix'] = $this->questionHelper->ask($input, $output, $question);
 
     $this->output->writeln("<info>Great. Now let's make some choices about how your project will be set up.</info>");
     $question = new ConfirmationQuestion('<question>Do you want to create a VM?</question> <info>[yes]</info> ', true);
-    $answers['vm'] = $helper->ask($input, $output, $question);
+    $answers['vm'] = $this->questionHelper->ask($input, $output, $question);
 
     // $question = new ConfirmationQuestion('<question>Do you want to create an Acquia Cloud free tier site for this project?</question> ', false);
     // $create_acf_site = $helper->ask($input, $output, $question);
@@ -108,7 +100,7 @@ class CreateProjectCommand extends CommandBase
     $this->output->writeln("<comment>You have entered the following values:</comment>");
     $this->printArrayAsTable($answers);
     $question = new ConfirmationQuestion('<question>Create new project now?</question> ', true);
-    $create = $helper->ask($input, $output, $question);
+    $create = $this->questionHelper->ask($input, $output, $question);
 
     if ($create) {
       $this->output->writeln("<info>Awesome. Let's create your project. This could take a while...");
