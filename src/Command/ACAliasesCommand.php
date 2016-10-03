@@ -30,6 +30,14 @@ class AcAliasesCommand extends CommandBase
 
   protected function execute(InputInterface $input, OutputInterface $output)
   {
+
+    $helper = $this->getHelper('question');
+    $question = new ConfirmationQuestion('<comment>This will overwrite existing drush aliases. Do you want to continue?</comment> ', false);
+    $continue = $helper->ask($input, $output, $question);
+    if (!$continue) {
+      return 1;
+    }
+
     $config = $this->getCloudApiConfig();
     $this->cloudApiClient = $this->getCloudApiClient($config['email'], $config['key']);
 
