@@ -173,16 +173,6 @@ abstract class CommandBase extends Command
   }
 
   /**
-   * @param $cloudApiClient
-   */
-  protected function listSites($cloudApiClient) {
-    $sites = $cloudApiClient->sites();
-    foreach ($sites as $site) {
-      $this->output->writeln($site->name());
-    }
-  }
-
-  /**
    * @param string $command
    *
    * @return bool
