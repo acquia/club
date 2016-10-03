@@ -62,19 +62,27 @@ class PullProjectCommand extends CommandBase
       $remote_alias = $answers['site'] . $answers['env'];
       $this->executeCommands([
         "./vendor/bin/blt vm",
-        "./vendor/bin/blt local:setup",
-        "./vendor/bin/blt local:sync -Ddrush.aliases.remote=$remote_alias",
+      ], $dir_name);
+
+      if ($answers['download_db']) {
+        $this->executeCommands([
+          "./vendor/bin/blt setup:build",
+          "./vendor/bin/blt local:sync -Ddrush.aliases.remote=$remote_alias",
+        ], $dir_name);
+      }
+      else {
+        $this->executeCommands([
+          "./vendor/bin/blt local:setup",
+        ], $dir_name);
+      }
+
+      if ($answers['download_files']) {
+        // drush rsync @remote:%files @local:%files
+      }
+
+      $this->executeCommands([
         "./vendor/bin/drush @{$answers['machine_name']}.local uli",
       ], $dir_name);
-      $this->output->writeln();
     }
-    else {
-      $this->output->writeln();
-    }
-
-//    @todo
-//    -> sync db ./vendor/bin/blt local:sync
-//    -> sync files? drush rsync @remote:%files @local:%files
   }
-
 }
