@@ -71,7 +71,8 @@ class AcAliasesCommand extends CommandBase
   protected function getSiteAliases($site) {
     // Skip AC trex sites because the api breaks on them.
     $skip_site = false;
-    if (strpos($site, 'trex') !== false) {
+    if (strpos($site, 'trex') !== false
+       || strpos($site, ':*') !== false) {
       $skip_site = true;
     }
     if (!$skip_site) {
@@ -84,7 +85,7 @@ class AcAliasesCommand extends CommandBase
 
       // Loop over all environments.
       foreach($environments as $env) {
-        // Build our variables incase API changes.
+        // Build our variables in case API changes.
         $envName = $env->name();
         $uri = $env->defaultDomain();
         $remoteHost = $env->sshHost();

@@ -17,6 +17,10 @@ $aliases['{{alias["ac-env"]}}'] = array(
   'remote-user' => '{{alias["remote-user"]}}',
   'path-aliases' => array(
     '%drush-script' => 'drush' . $drush_major_version,
-  ),
+  )
+);
+$aliases['{{alias["ac-env"]}}.livedev'] = array(
+  'parent' => '@{{alias["ac-site"]}}.{{alias["ac-env"]}}',
+  'root' => '/mnt/gfs/{{alias["ac-site"]}}.{{alias["ac-env"]}}/livedev/docroot',
 );
 {% endfor %}
