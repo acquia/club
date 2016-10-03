@@ -6,10 +6,12 @@ require __DIR__ . '/vendor/autoload.php';
 use Acquia\BltValet\Command\CheckRequirementsCommand;
 use Acquia\BltValet\Command\CreateProjectCommand;
 use Acquia\BltValet\Command\PullProjectCommand;
+use Acquia\BltValet\Command\ACAliasesCommand;
 use Symfony\Component\Console\Application;
 
 $application = new Application();
 $application->add(new CheckRequirementsCommand());
 $application->add(new CreateProjectCommand());
 $application->add(new PullProjectCommand());
+$application->add(new ACAliasesCommand());
 $application->run();
