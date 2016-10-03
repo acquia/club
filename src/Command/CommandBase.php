@@ -81,6 +81,9 @@ abstract class CommandBase extends Command
     $this->cloudApiConfig = $this->loadCloudApiConfig();
   }
 
+  /**
+   * @return string
+   */
   protected function xDebugPrompt() {
     if (extension_loaded('xdebug')) {
       $this->output->writeln("<comment>You have xDebug enabled. This will make everything very slow. You should really disable it.</comment>");
@@ -187,10 +190,21 @@ abstract class CommandBase extends Command
     }
   }
 
+  /**
+   * @param \Acquia\Cloud\Api\CloudApiClient $cloud_api_client
+   * @param $site_id
+   *
+   * @return \Acquia\Cloud\Api\Response\Site
+   */
   protected function getSite(CloudApiClient $cloud_api_client, $site_id) {
     return $cloud_api_client->site($site_id);
   }
 
+  /**
+   * @param \Acquia\Cloud\Api\CloudApiClient $cloud_api_client
+   *
+   * @return array
+   */
   protected function getSites(CloudApiClient $cloud_api_client) {
     $sites = $cloud_api_client->sites();
     $sites_filtered = [];
@@ -205,6 +219,12 @@ abstract class CommandBase extends Command
     return $sites_filtered;
 
   }
+
+  /**
+   * @param $site
+   *
+   * @return mixed
+   */
   protected function getSiteLabel($site) {
     $site_slug = (string) $site;
     $site_split = explode(':', $site_slug);
@@ -212,6 +232,11 @@ abstract class CommandBase extends Command
     return $site_split[1];
   }
 
+  /**
+   * @param \Acquia\Cloud\Api\CloudApiClient $cloud_api_client
+   *
+   * @return array
+   */
   protected function getSitesList(CloudApiClient $cloud_api_client) {
     $site_list = [];
     $sites = $this->getSites($cloud_api_client);
@@ -223,6 +248,12 @@ abstract class CommandBase extends Command
     return $site_list;
   }
 
+  /**
+   * @param \Acquia\Cloud\Api\CloudApiClient $cloud_api_client
+   * @param $label
+   *
+   * @return \Acquia\Cloud\Api\Response\Site|null
+   */
   protected function getSiteByLabel(CloudApiClient $cloud_api_client, $label) {
     $sites = $this->getSites($cloud_api_client);
     foreach ($sites as $site_id) {
@@ -235,6 +266,12 @@ abstract class CommandBase extends Command
     return NULL;
   }
 
+  /**
+   * @param \Acquia\Cloud\Api\CloudApiClient $cloud_api_client
+   * @param $site
+   *
+   * @return array
+   */
   protected function getEnvironmentsList(CloudApiClient $cloud_api_client, $site) {
     $environments = $cloud_api_client->environments($site);
     $environments_list = [];

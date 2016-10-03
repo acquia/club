@@ -40,11 +40,13 @@ class PullProjectCommand extends CommandBase
     $question = new ConfirmationQuestion('<question>Do you want to create a VM?</question> ', true);
     $answers['vm'] = $helper->ask($input, $output, $question);
 
-    $question = new ConfirmationQuestion('<question>Do you want to download a database from Acquia Cloud?</question> ', true);
-    $answers['download_db'] = $helper->ask($input, $output, $question);
+    if ($answers['vm']) {
+      $question = new ConfirmationQuestion('<question>Do you want to download a database from Acquia Cloud?</question> ', true);
+      $answers['download_db'] = $helper->ask($input, $output, $question);
 
-    $question = new ConfirmationQuestion('<question>Do you want to download the public and private file directories from Acquia Cloud?</question> ', true);
-    $answers['download_files'] = $helper->ask($input, $output, $question);
+      $question = new ConfirmationQuestion('<question>Do you want to download the public and private file directories from Acquia Cloud?</question> ', true);
+      $answers['download_files'] = $helper->ask($input, $output, $question);
+    }
 
     $dir_name = $answers['site'];
     $this->executeCommands([
@@ -57,9 +59,11 @@ class PullProjectCommand extends CommandBase
     ], $dir_name);
 
     if ($answers['vm']) {
+      $remote_alias = $answers['site'] . $answers['env'];
       $this->executeCommands([
         "./vendor/bin/blt vm",
         "./vendor/bin/blt local:setup",
+        "./vendor/bin/blt local:sync -Ddrush.aliases.remote=$remote_alias",
         "./vendor/bin/drush @{$answers['machine_name']}.local uli",
       ], $dir_name);
       $this->output->writeln();
