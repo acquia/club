@@ -6,9 +6,14 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
+use vierbergenlars\SemVer\expression;
+use vierbergenlars\SemVer\version;
 
 class PullProjectCommand extends CommandBase
 {
+
+  const BLT_VERSION_CONSTRAINT = '^8.4.6';
+
   protected function configure()
   {
     $this
@@ -36,6 +41,17 @@ class PullProjectCommand extends CommandBase
     $question = new ChoiceQuestion('<question>Which environment would you like to pull from (if applicable)?</question>', (array) $environments);
     $answers['env'] = $helper->ask($input, $output, $question);
 
+    // @todo Determine which branch is on the env.
+    // @todo Determine if branch is using BLT.
+
+    $dir_name = $answers['site'];
+    $this->executeCommands([
+      "git clone {$site->vcsUrl()} $dir_name",
+    ]);
+
+    $composer_lock = json_decode(file_get_contents($dir_name . '/composer.lock'), TRUE);
+    $this->verifyBltVersion($composer_lock);
+
     $this->output->writeln("<info>Great. Now let's make some choices about how your project will be set up locally.");
     $question = new ConfirmationQuestion('<question>Do you want to create a VM?</question> ', true);
     $answers['vm'] = $helper->ask($input, $output, $question);
@@ -44,14 +60,12 @@ class PullProjectCommand extends CommandBase
       $question = new ConfirmationQuestion('<question>Do you want to download a database from Acquia Cloud?</question> ', true);
       $answers['download_db'] = $helper->ask($input, $output, $question);
 
+      // @todo Change to a choice btw download and stage file proxy.
       $question = new ConfirmationQuestion('<question>Do you want to download the public and private file directories from Acquia Cloud?</question> ', true);
       $answers['download_files'] = $helper->ask($input, $output, $question);
     }
 
-    $dir_name = $answers['site'];
-    $this->executeCommands([
-      "git clone {$site->vcsUrl()} $dir_name",
-    ]);
+    $this->output->writeln("<info>Awesome. Let's pull down your project. This could take a while...");
 
     $this->executeCommands([
       'composer install',
@@ -77,12 +91,29 @@ class PullProjectCommand extends CommandBase
       }
 
       if ($answers['download_files']) {
-        // drush rsync @remote:%files @local:%files
+          $this->executeCommands([
+            "drush rsync @$remote_alias:%files @self:%files"
+          ], $dir_name . '/docroot');
       }
 
       $this->executeCommands([
         "./vendor/bin/drush @{$answers['machine_name']}.local uli",
       ], $dir_name);
+    }
+  }
+
+  protected function verifyBltVersion($composer_lock) {
+    foreach ($composer_lock['packages'] as $package) {
+      if ($package['name'] == 'acquia/blt') {
+        if ($package['version'] != '8.x-dev') {
+          $semver = new version($package['version']);
+          if (!$semver->satisfies(new expression(self::BLT_VERSION_CONSTRAINT))) {
+            $constraint = self::BLT_VERSION_CONSTRAINT;
+            $this->output->writeln("<error>This project's version of BLT does not satisfy the required version constraint of $constraint.");
+            exit(1);
+          }
+        }
+      }
     }
   }
 }

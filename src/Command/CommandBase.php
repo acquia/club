@@ -307,23 +307,21 @@ abstract class CommandBase extends Command
    * @return bool
    */
   protected function executeCommand($command, $cwd = null, $display_output = true, $mustRun = true) {
-    $timeout = 2000;
+    $timeout = 10800;
     $env = [
       'COMPOSER_PROCESS_TIMEOUT' => $timeout
     ] + $_ENV;
     $process = new Process($command, $cwd, $env, null, $timeout);
-    //$process->setTty(true);
     $method = $mustRun ? 'mustRun' : 'run';
-    $process->$method(function ($type, $buffer) use (&$display_output) {
-      if ($display_output) {
-        print $buffer;
-      }
-    });
 
     if ($display_output) {
+      $process->$method(function ($type, $buffer) {
+          print $buffer;
+      });
       return $process->isSuccessful();
     }
     else {
+      $process->$method();
       return $process->getOutput();
     }
   }

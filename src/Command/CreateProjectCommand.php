@@ -115,6 +115,11 @@ class CreateProjectCommand extends CommandBase
         $this->output->writeln();
       }
     }
+
+    // @todo Push to Acquia Cloud.
+    // @todo Trigger pipelines build.
+    // @todo Deploy branch and install.
+    // @todo drush uli remote.
   }
 
   /**
@@ -161,15 +166,14 @@ class CreateProjectCommand extends CommandBase
   )) {
     $identifier = str_replace(array_keys($filter), array_values($filter), $identifier);
 
-    // Valid characters in a CSS identifier are:
-    // - the hyphen (U+002D)
+    // Valid characters are:
     // - a-z (U+0030 - U+0039)
     // - A-Z (U+0041 - U+005A)
     // - the underscore (U+005F)
     // - 0-9 (U+0061 - U+007A)
     // - ISO 10646 characters U+00A1 and higher
     // We strip out any character not in the above list.
-    $identifier = preg_replace('/[^\x{002D}\x{0030}-\x{0039}\x{0041}-\x{005A}\x{005F}\x{0061}-\x{007A}\x{00A1}-\x{FFFF}]/u', '', $identifier);
+    $identifier = preg_replace('/[^\x{0030}-\x{0039}\x{0041}-\x{005A}\x{005F}\x{0061}-\x{007A}\x{00A1}-\x{FFFF}]/u', '', $identifier);
     // Identifiers cannot start with a digit, two hyphens, or a hyphen followed by a digit.
     $identifier = preg_replace(array(
       '/^[0-9]/',
