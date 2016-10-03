@@ -40,10 +40,7 @@ class CreateProjectCommand extends CommandBase
   protected function execute(InputInterface $input, OutputInterface $output)
   {
     $answers = [];
-
-    if (!$this->xDebugPrompt()) {
-      return 1;
-    }
+    $this->xDebugPrompt();
 
     if ($this->fs->exists('.git')) {
       $formatter = $this->getHelper('formatter');
@@ -58,9 +55,7 @@ class CreateProjectCommand extends CommandBase
       return 1;
     }
 
-    if (!$this->checkSystemRequirements()) {
-      return 1;
-    }
+    $this->checkSystemRequirements();
 
     $this->output->writeln("<info>Let's start by entering some information about your project.</info>");
 
@@ -72,19 +67,7 @@ class CreateProjectCommand extends CommandBase
     $question = new Question("<question>Project machine name:</question> <info>[$default_machine_name]</info> ", $default_machine_name);
     $answers['machine_name'] = $this->questionHelper->ask($input, $output, $question);
 
-    $destination_dir = getcwd() . '/' . $answers['machine_name'];
-    if ($this->fs->exists($destination_dir)) {
-      $this->output->writeln("<comment>Uh oh. The destination directory already exists.</comment>");
-      $question = new ConfirmationQuestion("<comment>Delete $destination_dir?</comment> ", false);
-      $delete_dir = $this->questionHelper->ask($input, $output, $question);
-      if ($delete_dir) {
-        $this->fs->remove($destination_dir);
-      }
-      else {
-        $output->writeln("<comment>Please choose a different machine name for your project, or change directories.</comment>");
-        return 1;
-      }
-    }
+    $this->checkDestinationDir($answers['machine_name']);
 
     $default_prefix = self::convertStringToPrefix($answers['human_name']);
     $question = new Question("<question>Project prefix:</question> <info>[$default_prefix]</info>", $default_prefix);
@@ -143,7 +126,9 @@ class CreateProjectCommand extends CommandBase
     $command = $this->getApplication()->find('check-requirements');
     $returnCode = $command->run($this->input, $this->output);
 
-    return $returnCode == 0;
+    if ($returnCode !== 0) {
+      exit(1);
+    }
   }
 
   /**

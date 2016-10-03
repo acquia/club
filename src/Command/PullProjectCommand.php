@@ -21,10 +21,7 @@ class PullProjectCommand extends CommandBase
   protected function execute(InputInterface $input, OutputInterface $output)
   {
 
-    if (!$this->xDebugPrompt()) {
-      return 1;
-    }
-
+    $this->xDebugPrompt();
     $config = $this->getCloudApiConfig();
     $cloud_api_client = $this->getCloudApiClient($config['email'], $config['key']);
 
@@ -32,6 +29,9 @@ class PullProjectCommand extends CommandBase
     $question = new ChoiceQuestion('<question>Which site would you like to pull?</question>', $this->getSitesList($cloud_api_client));
     $answers['site'] = $helper->ask($input, $output, $question);
     $site = $this->getSiteByLabel($cloud_api_client, $answers['site']);
+
+    $this->checkDestinationDir($answers['site']);
+
     $environments = $this->getEnvironmentsList($cloud_api_client, $site);
     $question = new ChoiceQuestion('<question>Which environment would you like to pull from (if applicable)?</question>', (array) $environments);
     $answers['env'] = $helper->ask($input, $output, $question);

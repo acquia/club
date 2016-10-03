@@ -88,8 +88,11 @@ abstract class CommandBase extends Command
     if (extension_loaded('xdebug')) {
       $this->output->writeln("<comment>You have xDebug enabled. This will make everything very slow. You should really disable it.</comment>");
       $question = new ConfirmationQuestion('<comment>Do you want to continue?</comment> ', true);
+      $continue = $this->questionHelper->ask($this->input, $this->output, $question);
 
-      return $this->questionHelper->ask($this->input, $this->output, $question);
+      if (!$continue) {
+        exit(1);
+      }
     }
   }
 
@@ -187,6 +190,22 @@ abstract class CommandBase extends Command
     catch (\Exception $e) {
       $this->output->writeln("<error>Failed to authenticate with Acquia Cloud API.</error>");
       return NULL;
+    }
+  }
+
+  protected function checkDestinationDir($dir_name) {
+    $destination_dir = getcwd() . '/' . $dir_name;
+    if ($this->fs->exists($destination_dir)) {
+      $this->output->writeln("<comment>Uh oh. The destination directory already exists.</comment>");
+      $question = new ConfirmationQuestion("<comment>Delete $destination_dir?</comment> ", false);
+      $delete_dir = $this->questionHelper->ask($this->input, $this->output, $question);
+      if ($delete_dir) {
+        $this->fs->remove($destination_dir);
+      }
+      else {
+        $this->output->writeln("<comment>Please choose a different machine name for your project, or change directories.</comment>");
+        exit(1);
+      }
     }
   }
 
