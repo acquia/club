@@ -4,4 +4,4 @@
 
     git clone https://github.com/acquia/club.git
     composer install --working-dir=club
-    ./vendor/bin/club list
+    ./club/bin/club list
