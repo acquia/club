@@ -4,6 +4,7 @@ namespace Acquia\Club\Command;
 
 use Acquia\Cloud\Api\CloudApiClient;
 use Acquia\Cloud\Api\Response\SiteNames;
+use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
@@ -28,6 +29,22 @@ class AcAliasesCommand extends CommandBase
         ;
     }
 
+    /**
+     * Initializes the command just after the input has been validated.
+     *
+     * This is mainly useful when a lot of commands extends one main command
+     * where some things need to be initialized based on the input arguments and options.
+     *
+     * @param InputInterface  $input  An InputInterface instance
+     * @param OutputInterface $output An OutputInterface instance
+     */
+    protected function initialize(InputInterface $input, OutputInterface $output)
+    {
+        parent::initialize($input, $output);
+        $this->cloudApiConfig = $this->loadCloudApiConfig();
+        $this->setCloudApiClient($this->cloudApiConfig['email'], $this->cloudApiConfig['key']);
+    }
+
     protected function execute(InputInterface $input, OutputInterface $output)
     {
 
@@ -41,15 +58,16 @@ class AcAliasesCommand extends CommandBase
             return 1;
         }
 
-        $config = $this->getCloudApiConfig();
-        $this->cloudApiClient = $this->getCloudApiClient($config['email'], $config['key']);
+        $this->cloudApiClient = $this->getCloudApiClient();
 
         $this->output->writeln("<info>Gathering sites list from Acquia Cloud.</info>");
         $sites = (array) $this->cloudApiClient->sites();
         $sitesCount = count($sites);
 
         $progress = new ProgressBar($output, $sitesCount);
-        $progress->setFormat("<info><fg=white;bg=blue>%current%/%max% [%bar%] %percent:3s%% \n %message%</info>");
+        $style = new OutputFormatterStyle('white', 'blue');
+        $output->getFormatter()->setStyle('status', $style);
+        $progress->setFormat("<status> %current%/%max% [%bar%] %percent:3s%% \n %message%</status>");
         $progress->setMessage('Starting Aliases sync...');
         $this->output->writeln(
             "<info>Found " . $sitesCount . " subscription(s). Gathering information about each.</info>"
@@ -66,8 +84,8 @@ class AcAliasesCommand extends CommandBase
             $progress->advance();
         }
         $progress->setMessage("Syncing: complete. \n");
+        $progress->clear();
         $progress->finish();
-        $output->writeln("");
 
         if ($errors) {
             $formatter = $this->getHelper('formatter');
@@ -75,7 +93,7 @@ class AcAliasesCommand extends CommandBase
             $output->writeln($formattedBlock);
         }
 
-        $this->output->writeln("<info>Aliases were written to, type 'drush sa' to see them.");
+        $this->output->writeln("<info>Aliases were written to, type 'drush sa' to see them.</info>");
     }
 
   /**

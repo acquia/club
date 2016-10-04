@@ -68,21 +68,49 @@ class CreateProjectCommand extends CommandBase
         if ($create) {
             $this->createProject($answers);
         }
+
+        $cwd = getcwd() . '/' . $answers['machine_name'];
         if ($answers['vm']) {
             $this->createVm($answers);
         }
 
         if (!empty($answers['ci']['provider'])) {
-            $cwd = getcwd() . '/' . $answers['machine_name'];
-            $this->executeCommand([
-                './vendor/bin/blt ci:pipelines:init',
+            $this->executeCommands([
+                "./vendor/bin/blt ci:{$answers['ci']['provider']}:init",
             ], $cwd);
         }
 
-        // @todo Push to Acquia Cloud.
-        // @todo Trigger pipelines build.
-        // @todo Deploy branch and install.
-        // @todo drush uli remote.
+        $question = new ConfirmationQuestion('<question>Do you want to push this to an Acquia Cloud subscription?</question> <info>[yes]</info> ', true);
+        $ac = $this->questionHelper->ask($this->input, $this->output, $question);
+        if ($ac) {
+            $this->cloudApiConfig = $this->loadCloudApiConfig();
+            $this->setCloudApiClient($this->cloudApiConfig['email'], $this->cloudApiClient['key']);
+            $cloud_api_client = $this->getCloudApiClient();
+            $answers['ac']['site'] = $this->askWhichCloudSite($cloud_api_client);
+            $site = $this->getSiteByLabel($cloud_api_client, $answers['ac']['site']);
+            $answers['ac']['env'] = $this->askWhichCloudEnvironment($cloud_api_client, $site);
+
+            $this->executeCommands([
+                "git push {$site->vcsUrl()}",
+            ], $cwd);
+
+            if ($answers['ci']['provider'] == 'pipelines') {
+                $question = new ConfirmationQuestion('<question>Start a pipelines build now?</question> <info>[yes]</info> ', true);
+                $this->output->writeln("<info>You must have pipelines already enabled.</info>");
+                $pipelines_start = $this->questionHelper->ask($this->input, $this->output, $question);
+                if ($pipelines_start) {
+                    $this->executeCommands([
+                        "pipelines start",
+                    ], $cwd);
+                    $this->output->writeln("<comment>Starting a pipelines build to generate a deployment artifact on cloud.</comment>");
+                }
+            }
+
+            // @todo Deploy branch and install.
+            // @todo drush uli remote.
+            // $question = new ConfirmationQuestion("<question>Do you want to install Drupal on Acquia Cloud's {$answers['env']}?</question> <info>[yes]</info> ", true);
+            // $answers['ac']['install'] = $this->questionHelper->ask($this->input, $this->output, $question);
+        }
     }
 
   /**
@@ -151,13 +179,13 @@ class CreateProjectCommand extends CommandBase
         $answers['vm'] = $this->questionHelper->ask($this->input, $this->output, $question);
 
         $question = new ConfirmationQuestion('<question>Do you want to use Continuous Integration?</question> <info>[yes]</info> ', true);
-        $answers['ci'] = $this->questionHelper->ask($this->input, $this->output, $question);
-        if ($answers['ci']) {
+        $ci = $this->questionHelper->ask($this->input, $this->output, $question);
+        if ($ci) {
             $provider_options = [
                 'pipelines' => 'Acquia Pipelines',
-                'travis_ci' => 'Travis CI',
+                'travis' => 'Travis CI',
             ];
-            $question = new ChoiceQuestion('<question>Choose a Continuous Integration provider:', $provider_options, [1]);
+            $question = new ChoiceQuestion('<question>Choose a Continuous Integration provider: </question> <info>[pipelines]</info>', $provider_options, [1]);
             $answers['ci']['provider'] = $this->questionHelper->ask($this->input, $this->output, $question);
         }
 
@@ -179,6 +207,8 @@ class CreateProjectCommand extends CommandBase
         ]);
 
         $this->updateProjectYml($answers);
+
+        $this->output->writeln("<info>Your project has been created locally.</info>");
     }
 
     protected function updateProjectYml($answers)
@@ -298,7 +328,8 @@ class CreateProjectCommand extends CommandBase
      *
      * @return array
      */
-    protected function flattenArray($array) {
+    protected function flattenArray($array)
+    {
         $iterator = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($array));
         $result = [];
         foreach ($iterator as $leaf_value) {

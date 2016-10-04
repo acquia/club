@@ -23,29 +23,32 @@ class PullProjectCommand extends CommandBase
         ;
     }
 
+    /**
+     * Initializes the command just after the input has been validated.
+     *
+     * This is mainly useful when a lot of commands extends one main command
+     * where some things need to be initialized based on the input arguments and options.
+     *
+     * @param InputInterface  $input  An InputInterface instance
+     * @param OutputInterface $output An OutputInterface instance
+     */
+    protected function initialize(InputInterface $input, OutputInterface $output)
+    {
+        parent::initialize($input, $output);
+        $this->cloudApiConfig = $this->loadCloudApiConfig();
+        $this->setCloudApiClient($this->cloudApiConfig['email'], $this->cloudApiConfig['key']);
+    }
+
     protected function execute(InputInterface $input, OutputInterface $output)
     {
 
         $this->checkXdebug();
-        $config = $this->getCloudApiConfig();
-        $cloud_api_client = $this->getCloudApiClient($config['email'], $config['key']);
 
-        $helper = $this->getHelper('question');
-        $question = new ChoiceQuestion(
-            '<question>Which site would you like to pull?</question>',
-            $this->getSitesList($cloud_api_client)
-        );
-        $answers['site'] = $helper->ask($input, $output, $question);
-        $site = $this->getSiteByLabel($cloud_api_client, $answers['site']);
-
+        $cloud_api_client = $this->getCloudApiClient();
+        $answers['site'] = $this->askWhichCloudSite($cloud_api_client);
         $this->checkDestinationDir($answers['site']);
-
-        $environments = $this->getEnvironmentsList($cloud_api_client, $site);
-        $question = new ChoiceQuestion(
-            '<question>Which environment would you like to pull from (if applicable)?</question>',
-            (array) $environments
-        );
-        $answers['env'] = $helper->ask($input, $output, $question);
+        $site = $this->getSiteByLabel($cloud_api_client, $answers['site']);
+        $this->askWhichCloudEnvironment($cloud_api_client, $site);
 
         // @todo Determine which branch is on the env.
         // @todo Determine if branch is using BLT.

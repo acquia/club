@@ -2,11 +2,13 @@
 
 namespace Acquia\Club\Command;
 
+use Acquia\Cloud\Api\Response\Site;
 use Acquia\Club\Loader\JsonFileLoader;
 use Symfony\Component\Config\Loader\DelegatingLoader;
 use Symfony\Component\Config\Loader\LoaderResolver;
 use Symfony\Component\Console\Helper\FormatterHelper;
 use Symfony\Component\Console\Helper\QuestionHelper;
+use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Process\Process;
@@ -25,42 +27,40 @@ use Symfony\Component\Console\Question\Question;
  */
 abstract class CommandBase extends Command
 {
-  /**
+    /**
    * @var string
    */
     protected $drushAliasDir;
-  /**
+    /** @var CloudApiClient  */
+    protected $cloudApiClient;
+    /**
    * @var string
    */
     protected $cloudConfDir;
-  /**
+    /**
    * @var string
    */
     protected $cloudConfFileName;
-  /**
+    /**
    * @var string
    */
     protected $cloudConfFilePath;
-  /**
+    /**
    * @var array
    */
-    private $cloudApiConfig;
-
-  /** @var Filesystem */
+    protected $cloudApiConfig;
+    /** @var Filesystem */
     protected $fs;
-
-  /**
+    /**
    * @var InputInterface
    */
     protected $input;
-  /**
+    /**
    * @var OutputInterface
    */
     protected $output;
-
-  /** @var QuestionHelper */
+    /** @var QuestionHelper */
     protected $questionHelper;
-
     /** @var FormatterHelper */
     protected $formatter;
 
@@ -84,7 +84,6 @@ abstract class CommandBase extends Command
         $this->drushAliasDir = $_SERVER['HOME'] . '/.drush';
         $this->cloudConfFileName = 'cloudapi.conf';
         $this->cloudConfFilePath = $this->cloudConfDir . '/' . $this->cloudConfFileName;
-        $this->cloudApiConfig = $this->loadCloudApiConfig();
     }
 
   /**
@@ -159,15 +158,15 @@ abstract class CommandBase extends Command
    */
     protected function askForCloudApiCredentials()
     {
-        $helper = $this->getHelper('question');
         $usernameQuestion = new Question('<question>Please enter your Acquia cloud email address:</question> ', '');
         $privateKeyQuestion = new Question('<question>Please enter your Acquia cloud private key:</question> ', '');
         $privateKeyQuestion->setHidden(true);
 
         do {
-            $email = $helper->ask($this->input, $this->output, $usernameQuestion);
-            $key = $helper->ask($this->input, $this->output, $privateKeyQuestion);
-            $cloud_api_client = $this->getCloudApiClient($email, $key);
+            $email = $this->questionHelper->ask($this->input, $this->output, $usernameQuestion);
+            $key = $this->questionHelper->ask($this->input, $this->output, $privateKeyQuestion);
+            $this->setCloudApiClient($email, $key);
+            $cloud_api_client = $this->getCloudApiClient();
         } while (!$cloud_api_client);
 
         $config = array(
@@ -176,6 +175,33 @@ abstract class CommandBase extends Command
         );
 
         $this->writeCloudApiConfig($config);
+    }
+
+    protected function askWhichCloudSite($cloud_api_client)
+    {
+        $question = new ChoiceQuestion(
+            '<question>Which site would you like to pull?</question>',
+            $this->getSitesList($cloud_api_client)
+        );
+        $site_name = $this->questionHelper->ask($this->input, $this->output, $question);
+
+        return $site_name;
+    }
+
+    /**
+     * @param CloudApiClient $cloud_api_client
+     * @param Site $site
+     */
+    protected function askWhichCloudEnvironment($cloud_api_client, $site)
+    {
+        $environments = $this->getEnvironmentsList($cloud_api_client, $site);
+        $question = new ChoiceQuestion(
+            '<question>Which environment would you like to pull from (if applicable)?</question>',
+            (array) $environments
+        );
+        $env = $this->questionHelper->ask($this->input, $this->output, $question);
+
+        return $env;
     }
 
   /**
@@ -195,28 +221,35 @@ abstract class CommandBase extends Command
         return $this->cloudApiConfig;
     }
 
-  /**
-   * @param $username
-   * @param $password
-   *
-   * @return \Acquia\Cloud\Api\CloudApiClient|null
-   */
-    protected function getCloudApiClient($username, $password)
+    protected function setCloudApiClient($username, $password)
     {
         try {
             $cloudapi = CloudApiClient::factory(array(
-            'username' => $username,
-            'password' => $password,
+                'username' => $username,
+                'password' => $password,
             ));
 
             // We must call some method on the client to test authentication.
             $cloudapi->sites();
+
+            $this->cloudApiClient = $cloudapi;
 
             return $cloudapi;
         } catch (\Exception $e) {
             $this->output->writeln("<error>Failed to authenticate with Acquia Cloud API.</error>");
             return null;
         }
+    }
+
+  /**
+   * @param $username
+   * @param $password
+   *
+   * @return \Acquia\Cloud\Api\CloudApiClient|null
+   */
+    protected function getCloudApiClient()
+    {
+        return $this->cloudApiClient;
     }
 
     protected function checkDestinationDir($dir_name)
