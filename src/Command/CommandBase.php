@@ -5,6 +5,7 @@ namespace Acquia\Club\Command;
 use Acquia\Club\Loader\JsonFileLoader;
 use Symfony\Component\Config\Loader\DelegatingLoader;
 use Symfony\Component\Config\Loader\LoaderResolver;
+use Symfony\Component\Console\Helper\FormatterHelper;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Filesystem\Filesystem;
@@ -60,6 +61,9 @@ abstract class CommandBase extends Command
   /** @var QuestionHelper */
     protected $questionHelper;
 
+    /** @var FormatterHelper */
+    protected $formatter;
+
   /**
    * Initializes the command just after the input has been validated.
    *
@@ -74,6 +78,7 @@ abstract class CommandBase extends Command
         $this->input = $input;
         $this->output = $output;
         $this->questionHelper = $this->getHelper('question');
+        $this->formatter = $this->getHelper('formatter');
         $this->fs = new Filesystem();
         $this->cloudConfDir = $_SERVER['HOME'] . '/.acquia';
         $this->drushAliasDir = $_SERVER['HOME'] . '/.drush';
@@ -85,7 +90,7 @@ abstract class CommandBase extends Command
   /**
    * @return string
    */
-    protected function xDebugPrompt()
+    protected function checkXdebug()
     {
         if (extension_loaded('xdebug')) {
             $this->output->writeln(
@@ -97,6 +102,21 @@ abstract class CommandBase extends Command
             if (!$continue) {
                 exit(1);
             }
+        }
+    }
+
+    protected function checkCwd()
+    {
+        if ($this->fs->exists('.git')) {
+            $errorMessages = [
+                "It looks like you're currently inside of a git repository.",
+                "You can't create a new project inside of a repository.",
+                'Please change directories and try again.',
+            ];
+            $formattedBlock = $this->formatter->formatBlock($errorMessages, 'error');
+            $this->output->writeln($formattedBlock);
+
+            exit(1);
         }
     }
 

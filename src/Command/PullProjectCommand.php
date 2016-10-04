@@ -26,7 +26,7 @@ class PullProjectCommand extends CommandBase
     protected function execute(InputInterface $input, OutputInterface $output)
     {
 
-        $this->xDebugPrompt();
+        $this->checkXdebug();
         $config = $this->getCloudApiConfig();
         $cloud_api_client = $this->getCloudApiClient($config['email'], $config['key']);
 

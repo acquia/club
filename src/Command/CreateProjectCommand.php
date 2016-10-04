@@ -2,12 +2,16 @@
 
 namespace Acquia\Club\Command;
 
+use Acquia\Club\Configuration\ProjectConfiguration;
+use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
+use Symfony\Component\Filesystem\Exception\FileNotFoundException;
 use Symfony\Component\Yaml\Yaml;
 
 const MACOSX = 33;
@@ -28,6 +32,7 @@ class CreateProjectCommand extends CommandBase
         ->setName('create-project')
         ->setDescription('Creates a new project.')
         ->setHelp("This command allows you to create projects...")
+            ->addOption('recipe', 'r', InputOption::VALUE_OPTIONAL)
         ;
     }
 
@@ -40,45 +45,39 @@ class CreateProjectCommand extends CommandBase
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $answers = [];
-        $this->xDebugPrompt();
+        $this->checkXdebug();
+        $this->checkCwd();
+        // $this->checkSystemRequirements();
 
-        if ($this->fs->exists('.git')) {
-            $formatter = $this->getHelper('formatter');
-            $errorMessages = [
-            "It looks like you're currently inside of a git repository.",
-            "You can't create a new project inside of a repository.",
-            'Please change directories and try again.',
-            ];
-            $formattedBlock = $formatter->formatBlock($errorMessages, 'error');
-            $output->writeln($formattedBlock);
-
-            return 1;
+        $recipe_filename = $input->getOption('recipe');
+        if ($recipe_filename) {
+            $answers = $this->loadRecipe($recipe_filename);
+            $this->checkDestinationDir($answers['machine_name']);
         }
+        else {
+            $this->output->writeln("<info>Let's start by entering some information about your project.</info>");
 
-        //$this->checkSystemRequirements();
+            $question = new Question('<question>Project title (human readable):</question> ');
+            $this->requireQuestion($question);
+            $answers['human_name'] = $this->questionHelper->ask($input, $output, $question);
 
-        $this->output->writeln("<info>Let's start by entering some information about your project.</info>");
+            $default_machine_name = self::convertStringToMachineSafe($answers['human_name']);
+            $question = new Question("<question>Project machine name:</question> <info>[$default_machine_name]</info> ", $default_machine_name);
+            $answers['machine_name'] = $this->questionHelper->ask($input, $output, $question);
 
-        $question = new Question('<question>Project title (human readable):</question> ');
-        $this->requireQuestion($question);
-        $answers['human_name'] = $this->questionHelper->ask($input, $output, $question);
+            $this->checkDestinationDir($answers['machine_name']);
 
-        $default_machine_name = self::convertStringToMachineSafe($answers['human_name']);
-        $question = new Question("<question>Project machine name:</question> <info>[$default_machine_name]</info> ", $default_machine_name);
-        $answers['machine_name'] = $this->questionHelper->ask($input, $output, $question);
+            $default_prefix = self::convertStringToPrefix($answers['human_name']);
+            $question = new Question("<question>Project prefix:</question> <info>[$default_prefix]</info>", $default_prefix);
+            $answers['prefix'] = $this->questionHelper->ask($input, $output, $question);
 
-        $this->checkDestinationDir($answers['machine_name']);
+            $this->output->writeln("<info>Great. Now let's make some choices about how your project will be set up.</info>");
+            $question = new ConfirmationQuestion('<question>Do you want to create a VM?</question> <info>[yes]</info> ', true);
+            $answers['vm'] = $this->questionHelper->ask($input, $output, $question);
 
-        $default_prefix = self::convertStringToPrefix($answers['human_name']);
-        $question = new Question("<question>Project prefix:</question> <info>[$default_prefix]</info>", $default_prefix);
-        $answers['prefix'] = $this->questionHelper->ask($input, $output, $question);
-
-        $this->output->writeln("<info>Great. Now let's make some choices about how your project will be set up.</info>");
-        $question = new ConfirmationQuestion('<question>Do you want to create a VM?</question> <info>[yes]</info> ', true);
-        $answers['vm'] = $this->questionHelper->ask($input, $output, $question);
-
-        // $question = new ConfirmationQuestion('<question>Do you want to create an Acquia Cloud free tier site for this project?</question> ', false);
-        // $create_acf_site = $helper->ask($input, $output, $question);
+            // $question = new ConfirmationQuestion('<question>Do you want to create an Acquia Cloud free tier site for this project?</question> ', false);
+            // $create_acf_site = $helper->ask($input, $output, $question);
+        }
 
         $this->output->writeln("<comment>You have entered the following values:</comment>");
         $this->printArrayAsTable($answers);
@@ -134,6 +133,31 @@ class CreateProjectCommand extends CommandBase
         if ($returnCode !== 0) {
             exit(1);
         }
+    }
+
+    /**
+     * @param string $filename
+     *
+     * @return array
+     */
+    protected function loadRecipe($filename) {
+        if (!file_exists($filename))
+        {
+            throw new FileNotFoundException($filename);
+        }
+
+        $recipe = Yaml::parse(
+            file_get_contents($filename)
+        );
+        $configs = [ $recipe ];
+        $processor = new Processor();
+        $configuration_tree = new ProjectConfiguration();
+        $processed_configuration = $processor->processConfiguration(
+            $configuration_tree,
+            $configs
+        );
+
+        return $processed_configuration;
     }
 
   /**
