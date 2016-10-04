@@ -180,7 +180,7 @@ abstract class CommandBase extends Command
     protected function askWhichCloudSite($cloud_api_client)
     {
         $question = new ChoiceQuestion(
-            '<question>Which site would you like to pull?</question>',
+            '<question>Which site?</question>',
             $this->getSitesList($cloud_api_client)
         );
         $site_name = $this->questionHelper->ask($this->input, $this->output, $question);
@@ -196,7 +196,7 @@ abstract class CommandBase extends Command
     {
         $environments = $this->getEnvironmentsList($cloud_api_client, $site);
         $question = new ChoiceQuestion(
-            '<question>Which environment would you like to pull from (if applicable)?</question>',
+            '<question>Which environment?</question>',
             (array) $environments
         );
         $env = $this->questionHelper->ask($this->input, $this->output, $question);

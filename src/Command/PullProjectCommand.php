@@ -50,8 +50,7 @@ class PullProjectCommand extends CommandBase
         $site = $this->getSiteByLabel($cloud_api_client, $answers['site']);
         $this->askWhichCloudEnvironment($cloud_api_client, $site);
 
-        // @todo Determine which branch is on the env.
-        // @todo Determine if branch is using BLT.
+        // @todo Determine which branch is on the env and pull that branch.
 
         $dir_name = $answers['site'];
         $this->executeCommands([
@@ -65,21 +64,21 @@ class PullProjectCommand extends CommandBase
             "<info>Great. Now let's make some choices about how your project will be set up locally."
         );
         $question = new ConfirmationQuestion('<question>Do you want to create a VM?</question> ', true);
-        $answers['vm'] = $helper->ask($input, $output, $question);
+        $answers['vm'] = $this->helper->ask($input, $output, $question);
 
         if ($answers['vm']) {
             $question = new ConfirmationQuestion(
                 '<question>Do you want to download a database from Acquia Cloud?</question> ',
                 true
             );
-            $answers['download_db'] = $helper->ask($input, $output, $question);
+            $answers['download_db'] = $this->helper->ask($input, $output, $question);
 
             // @todo Change to a choice btw download and stage file proxy.
             $question = new ConfirmationQuestion(
                 '<question>Do you want to download the public and private file directories from Acquia Cloud?</question> ',
                 true
             );
-            $answers['download_files'] = $helper->ask($input, $output, $question);
+            $answers['download_files'] = $this->helper->ask($input, $output, $question);
         }
 
         $this->output->writeln(
