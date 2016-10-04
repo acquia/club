@@ -50,7 +50,6 @@ class CreateProjectCommand extends CommandBase
     {
         $this->checkXdebug();
         $this->checkCwd();
-        // $this->checkSystemRequirements();
 
         $recipe_filename = $input->getOption('recipe');
         if ($recipe_filename) {
@@ -110,21 +109,6 @@ class CreateProjectCommand extends CommandBase
             // @todo drush uli remote.
             // $question = new ConfirmationQuestion("<question>Do you want to install Drupal on Acquia Cloud's {$answers['env']}?</question> <info>[yes]</info> ", true);
             // $answers['ac']['install'] = $this->questionHelper->ask($this->input, $this->output, $question);
-        }
-    }
-
-  /**
-   * @return bool
-   * @throws \Symfony\Component\Console\Exception\ExceptionInterface
-   */
-    protected function checkSystemRequirements()
-    {
-        $this->output->writeln("Checking your machine against system requirements...");
-        $command = $this->getApplication()->find('check-requirements');
-        $returnCode = $command->run($this->input, $this->output);
-
-        if ($returnCode !== 0) {
-            exit(1);
         }
     }
 
