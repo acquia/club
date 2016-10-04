@@ -88,7 +88,9 @@ abstract class CommandBase extends Command
     protected function xDebugPrompt()
     {
         if (extension_loaded('xdebug')) {
-            $this->output->writeln("<comment>You have xDebug enabled. This will make everything very slow. You should really disable it.</comment>");
+            $this->output->writeln(
+                "<comment>You have xDebug enabled. This will make everything very slow. You should really disable it.</comment>"
+            );
             $question = new ConfirmationQuestion('<comment>Do you want to continue?</comment> ', true);
             $continue = $this->questionHelper->ask($this->input, $this->output, $question);
 
@@ -207,7 +209,9 @@ abstract class CommandBase extends Command
             if ($delete_dir) {
                 $this->fs->remove($destination_dir);
             } else {
-                $this->output->writeln("<comment>Please choose a different machine name for your project, or change directories.</comment>");
+                $this->output->writeln(
+                    "<comment>Please choose a different machine name for your project, or change directories.</comment>"
+                );
                 exit(1);
             }
         }

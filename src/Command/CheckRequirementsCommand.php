@@ -183,7 +183,9 @@ class CheckRequirementsCommand extends CommandBase
 
     protected function installHomebrew()
     {
-        $this->executeCommand('/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"');
+        $this->executeCommand(
+            '/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"'
+        );
     }
 
     protected function getOperatingSystem()

@@ -31,14 +31,20 @@ class PullProjectCommand extends CommandBase
         $cloud_api_client = $this->getCloudApiClient($config['email'], $config['key']);
 
         $helper = $this->getHelper('question');
-        $question = new ChoiceQuestion('<question>Which site would you like to pull?</question>', $this->getSitesList($cloud_api_client));
+        $question = new ChoiceQuestion(
+            '<question>Which site would you like to pull?</question>',
+            $this->getSitesList($cloud_api_client)
+        );
         $answers['site'] = $helper->ask($input, $output, $question);
         $site = $this->getSiteByLabel($cloud_api_client, $answers['site']);
 
         $this->checkDestinationDir($answers['site']);
 
         $environments = $this->getEnvironmentsList($cloud_api_client, $site);
-        $question = new ChoiceQuestion('<question>Which environment would you like to pull from (if applicable)?</question>', (array) $environments);
+        $question = new ChoiceQuestion(
+            '<question>Which environment would you like to pull from (if applicable)?</question>',
+            (array) $environments
+        );
         $answers['env'] = $helper->ask($input, $output, $question);
 
         // @todo Determine which branch is on the env.
@@ -52,20 +58,30 @@ class PullProjectCommand extends CommandBase
         $composer_lock = json_decode(file_get_contents($dir_name . '/composer.lock'), true);
         $this->verifyBltVersion($composer_lock);
 
-        $this->output->writeln("<info>Great. Now let's make some choices about how your project will be set up locally.");
+        $this->output->writeln(
+            "<info>Great. Now let's make some choices about how your project will be set up locally."
+        );
         $question = new ConfirmationQuestion('<question>Do you want to create a VM?</question> ', true);
         $answers['vm'] = $helper->ask($input, $output, $question);
 
         if ($answers['vm']) {
-            $question = new ConfirmationQuestion('<question>Do you want to download a database from Acquia Cloud?</question> ', true);
+            $question = new ConfirmationQuestion(
+                '<question>Do you want to download a database from Acquia Cloud?</question> ',
+                true
+            );
             $answers['download_db'] = $helper->ask($input, $output, $question);
 
             // @todo Change to a choice btw download and stage file proxy.
-            $question = new ConfirmationQuestion('<question>Do you want to download the public and private file directories from Acquia Cloud?</question> ', true);
+            $question = new ConfirmationQuestion(
+                '<question>Do you want to download the public and private file directories from Acquia Cloud?</question> ',
+                true
+            );
             $answers['download_files'] = $helper->ask($input, $output, $question);
         }
 
-        $this->output->writeln("<info>Awesome. Let's pull down your project. This could take a while...");
+        $this->output->writeln(
+            "<info>Awesome. Let's pull down your project. This could take a while..."
+        );
 
         $this->executeCommands([
         'composer install',
@@ -112,7 +128,9 @@ class PullProjectCommand extends CommandBase
                 $semver = new version($package['version']);
                 if (!$semver->satisfies(new expression(self::BLT_VERSION_CONSTRAINT))) {
                     $constraint = self::BLT_VERSION_CONSTRAINT;
-                    $this->output->writeln("<error>This project's version of BLT does not satisfy the required version constraint of $constraint.");
+                    $this->output->writeln(
+                        "<error>This project's version of BLT does not satisfy the required version constraint of $constraint."
+                    );
                     exit(1);
                 }
 

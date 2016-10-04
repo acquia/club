@@ -32,7 +32,10 @@ class AcAliasesCommand extends CommandBase
     {
 
         $helper = $this->getHelper('question');
-        $question = new ConfirmationQuestion('<comment>This will overwrite existing drush aliases. Do you want to continue?</comment> ', false);
+        $question = new ConfirmationQuestion(
+            '<comment>This will overwrite existing drush aliases. Do you want to continue?</comment> ',
+            false
+        );
         $continue = $helper->ask($input, $output, $question);
         if (!$continue) {
             return 1;
@@ -46,9 +49,11 @@ class AcAliasesCommand extends CommandBase
         $sitesCount = count($sites);
 
         $progress = new ProgressBar($output, $sitesCount);
-        $progress->setFormat("<info><fg=white;bg=blue>%current%/%max% [%bar%] %percent:3s%% \n %message%</>");
+        $progress->setFormat("<info><fg=white;bg=blue>%current%/%max% [%bar%] %percent:3s%% \n %message%</info>");
         $progress->setMessage('Starting Aliases sync...');
-        $this->output->writeln("<info>Found " . $sitesCount . " subscription(s). Gathering information about each.</info>");
+        $this->output->writeln(
+            "<info>Found " . $sitesCount . " subscription(s). Gathering information about each.</info>"
+        );
         $errors = [];
         foreach ($sites as $site) {
             $progress->setMessage('Syncing: ' . $site);
