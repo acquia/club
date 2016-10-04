@@ -55,7 +55,7 @@ class CreateProjectCommand extends CommandBase
       return 1;
     }
 
-    $this->checkSystemRequirements();
+    //$this->checkSystemRequirements();
 
     $this->output->writeln("<info>Let's start by entering some information about your project.</info>");
 
