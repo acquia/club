@@ -73,7 +73,7 @@ class PullProjectCommand extends CommandBase
     ], $dir_name);
 
     if ($answers['vm']) {
-      $remote_alias = $answers['site'] . $answers['env'];
+      $remote_alias = $answers['site'] . '.' . $answers['env'];
       $this->executeCommands([
         "./vendor/bin/blt vm",
       ], $dir_name);
@@ -105,15 +105,22 @@ class PullProjectCommand extends CommandBase
   protected function verifyBltVersion($composer_lock) {
     foreach ($composer_lock['packages'] as $package) {
       if ($package['name'] == 'acquia/blt') {
-        if ($package['version'] != '8.x-dev') {
-          $semver = new version($package['version']);
-          if (!$semver->satisfies(new expression(self::BLT_VERSION_CONSTRAINT))) {
-            $constraint = self::BLT_VERSION_CONSTRAINT;
-            $this->output->writeln("<error>This project's version of BLT does not satisfy the required version constraint of $constraint.");
-            exit(1);
-          }
+        if ($package['version'] == '8.x-dev') {
+          return TRUE;
         }
+
+        $semver = new version($package['version']);
+        if (!$semver->satisfies(new expression(self::BLT_VERSION_CONSTRAINT))) {
+          $constraint = self::BLT_VERSION_CONSTRAINT;
+          $this->output->writeln("<error>This project's version of BLT does not satisfy the required version constraint of $constraint.");
+          exit(1);
+        }
+
+        return TRUE;
       }
     }
+
+    $this->output->writeln("<error>acquia/blt was not found in this project's composer.lock file.");
+    exit(1);
   }
 }
