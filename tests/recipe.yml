@@ -2,3 +2,5 @@ human_name: "Test Project"
 machine_name: "test_project"
 prefix: "TP"
 vm: true
+ci:
+  provider: pipelines

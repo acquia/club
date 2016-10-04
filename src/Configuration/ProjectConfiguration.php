@@ -32,6 +32,17 @@ class ProjectConfiguration implements ConfigurationInterface
                 ->booleanNode('vm')
                     ->isRequired()
                 ->end()
+               ->arrayNode('ci')
+                    ->children()
+                        ->scalarNode('provider')
+                            ->isRequired()
+                            ->cannotBeEmpty()
+                            ->defaultValue('pipelines')
+                            ->validate()
+                                ->ifNotInArray(['pipelines', 'travis_ci'])
+                                ->thenInvalid('Invalid continuous integration provider %s')
+                        ->end()
+                    ->end()
             ->end()
         ;
 

@@ -11,7 +11,8 @@
         "tivie/php-os-detector": "1.0",
         "twig/twig": "~1.0",
         "squizlabs/php_codesniffer": "^2.7",
-        "vierbergenlars/php-semver": "^3.0"
+        "vierbergenlars/php-semver": "^3.0",
+        "dflydev/dot-access-data": "^1.0"
     },
     "license": "GPL-2.0",
     "authors": [

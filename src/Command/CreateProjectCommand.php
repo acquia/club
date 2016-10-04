@@ -9,11 +9,15 @@ use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Filesystem\Exception\FileNotFoundException;
 use Symfony\Component\Yaml\Yaml;
 
+/**
+ * @var int
+ */
 const MACOSX = 33;
 
 /**
@@ -44,7 +48,6 @@ class CreateProjectCommand extends CommandBase
    */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $answers = [];
         $this->checkXdebug();
         $this->checkCwd();
         // $this->checkSystemRequirements();
@@ -65,6 +68,21 @@ class CreateProjectCommand extends CommandBase
         if ($create) {
             $this->createProject($answers);
         }
+        if ($answers['vm']) {
+            $this->createVm($answers);
+        }
+
+        if (!empty($answers['ci']['provider'])) {
+            $cwd = getcwd() . '/' . $answers['machine_name'];
+            $this->executeCommand([
+                './vendor/bin/blt ci:pipelines:init',
+            ], $cwd);
+        }
+
+        // @todo Push to Acquia Cloud.
+        // @todo Trigger pipelines build.
+        // @todo Deploy branch and install.
+        // @todo drush uli remote.
     }
 
   /**
@@ -107,6 +125,9 @@ class CreateProjectCommand extends CommandBase
         return $processed_configuration;
     }
 
+    /**
+     * @return array
+     */
     protected function askForAnswers()
     {
         $this->output->writeln("<info>Let's start by entering some information about your project.</info>");
@@ -129,12 +150,26 @@ class CreateProjectCommand extends CommandBase
         $question = new ConfirmationQuestion('<question>Do you want to create a VM?</question> <info>[yes]</info> ', true);
         $answers['vm'] = $this->questionHelper->ask($this->input, $this->output, $question);
 
+        $question = new ConfirmationQuestion('<question>Do you want to use Continuous Integration?</question> <info>[yes]</info> ', true);
+        $answers['ci'] = $this->questionHelper->ask($this->input, $this->output, $question);
+        if ($answers['ci']) {
+            $provider_options = [
+                'pipelines' => 'Acquia Pipelines',
+                'travis_ci' => 'Travis CI',
+            ];
+            $question = new ChoiceQuestion('<question>Choose a Continuous Integration provider:', $provider_options, [1]);
+            $answers['ci']['provider'] = $this->questionHelper->ask($this->input, $this->output, $question);
+        }
+
         // $question = new ConfirmationQuestion('<question>Do you want to create an Acquia Cloud free tier site for this project?</question> ', false);
         // $create_acf_site = $helper->ask($input, $output, $question);
 
         return $answers;
     }
 
+    /**
+     * @param array $answers
+     */
     protected function createProject($answers)
     {
         $this->output->writeln("<info>Awesome. Let's create your project. This could take a while...");
@@ -143,6 +178,11 @@ class CreateProjectCommand extends CommandBase
             "composer create-project acquia/blt-project:~8 {$answers['machine_name']} --no-interaction",
         ]);
 
+        $this->updateProjectYml($answers);
+    }
+
+    protected function updateProjectYml($answers)
+    {
         $cwd = getcwd() . '/' . $answers['machine_name'];
         $config_file = $cwd . '/project.yml';
         $config = Yaml::parse(file_get_contents($config_file));
@@ -153,22 +193,16 @@ class CreateProjectCommand extends CommandBase
         $machine_name_safe = str_replace('_', '-', $answers['machine_name']);
         $config['project']['local']['hostname'] = str_replace('${project.machine_name}', $machine_name_safe, $config['project']['local']['hostname']);
         $this->fs->dumpFile($config_file, Yaml::dump($config));
+    }
 
-        if ($answers['vm']) {
-            $this->executeCommands([
-                "./vendor/bin/blt vm",
-                "./vendor/bin/blt local:setup",
-                "./vendor/bin/drush @{$answers['machine_name']}.local uli",
-            ], $cwd);
-            $this->output->writeln();
-        } else {
-            $this->output->writeln();
-        }
-
-        // @todo Push to Acquia Cloud.
-        // @todo Trigger pipelines build.
-        // @todo Deploy branch and install.
-        // @todo drush uli remote.
+    protected function createVm($answers)
+    {
+        $cwd = getcwd() . '/' . $answers['machine_name'];
+        $this->executeCommands([
+            "./vendor/bin/blt vm",
+            "./vendor/bin/blt local:setup",
+            "./vendor/bin/drush @{$answers['machine_name']}.local uli",
+        ], $cwd);
     }
 
   /**
@@ -238,9 +272,10 @@ class CreateProjectCommand extends CommandBase
    */
     protected function printArrayAsTable($array)
     {
-        $rowGenerator = function () use ($array) {
+        $flattened_array = $this->flattenArray($array);
+        $rowGenerator = function () use ($flattened_array) {
             $rows = [];
-            foreach ($array as $key => $value) {
+            foreach ($flattened_array as $key => $value) {
                 if ($value == '1') {
                     $value = 'yes';
                 } elseif ($value == '0') {
@@ -253,7 +288,27 @@ class CreateProjectCommand extends CommandBase
 
         $table = new Table($this->output);
         $table->setHeaders(array('Property', 'Value'))
-        ->setRows($rowGenerator())
-        ->render();
+            ->setRows($rowGenerator())
+            ->render();
+    }
+
+    /**
+     * Flattens multi-dimensional array into two-dimensional array with dot-notated keys.
+     * @param $array
+     *
+     * @return array
+     */
+    protected function flattenArray($array) {
+        $iterator = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($array));
+        $result = [];
+        foreach ($iterator as $leaf_value) {
+            $keys = array();
+            foreach (range(0, $iterator->getDepth()) as $depth) {
+                $keys[] = $iterator->getSubIterator($depth)->key();
+            }
+            $result[ join('.', $keys) ] = $leaf_value;
+        }
+
+        return $result;
     }
 }
