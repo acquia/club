@@ -260,6 +260,18 @@ abstract class CommandBase extends Command
             $question = new ConfirmationQuestion("<comment>Delete $destination_dir?</comment> ", false);
             $delete_dir = $this->questionHelper->ask($this->input, $this->output, $question);
             if ($delete_dir) {
+
+                if ($this->fs->exists($destination_dir . '/.vagrant')) {
+                    $this->output->writeln('');
+                    $this->output->writeln("<comment>One more thing, it looks like there's a vagrant machine in the destination directory.</comment>");
+                    $question = new ConfirmationQuestion("<comment>Destroy the vagrant machine in $destination_dir?</comment> ", false);
+                    $vagrant_destroy  = $this->questionHelper->ask($this->input, $this->output, $question);
+
+                    if ($vagrant_destroy) {
+                        $this->executeCommand('vagrant destroy --force', $destination_dir);
+                    }
+                }
+
                 $this->fs->remove($destination_dir);
             } else {
                 $this->output->writeln(
