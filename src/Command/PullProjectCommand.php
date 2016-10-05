@@ -45,14 +45,14 @@ class PullProjectCommand extends CommandBase
         $this->checkXdebug();
 
         $cloud_api_client = $this->getCloudApiClient();
-        $answers['site'] = $this->askWhichCloudSite($cloud_api_client);
-        $this->checkDestinationDir($answers['site']);
-        $site = $this->getSiteByLabel($cloud_api_client, $answers['site']);
-        $this->askWhichCloudEnvironment($cloud_api_client, $site);
+        $answers['ac']['site'] = $this->askWhichCloudSite($cloud_api_client);
+        $this->checkDestinationDir($answers['ac']['site']);
+        $site = $this->getSiteByLabel($cloud_api_client, $answers['ac']['site']);
+        $answers['ac']['env'] = $this->askWhichCloudEnvironment($cloud_api_client, $site);
 
         // @todo Determine which branch is on the env and pull that branch.
 
-        $dir_name = $answers['site'];
+        $dir_name = $answers['ac']['site'];
         $this->executeCommands([
         "git clone {$site->vcsUrl()} $dir_name",
         ]);
@@ -64,21 +64,21 @@ class PullProjectCommand extends CommandBase
             "<info>Great. Now let's make some choices about how your project will be set up locally."
         );
         $question = new ConfirmationQuestion('<question>Do you want to create a VM?</question> ', true);
-        $answers['vm'] = $this->helper->ask($input, $output, $question);
+        $answers['vm'] = $this->questionHelper->ask($input, $output, $question);
 
         if ($answers['vm']) {
             $question = new ConfirmationQuestion(
                 '<question>Do you want to download a database from Acquia Cloud?</question> ',
                 true
             );
-            $answers['download_db'] = $this->helper->ask($input, $output, $question);
+            $answers['download_db'] = $this->questionHelper->ask($input, $output, $question);
 
             // @todo Change to a choice btw download and stage file proxy.
             $question = new ConfirmationQuestion(
                 '<question>Do you want to download the public and private file directories from Acquia Cloud?</question> ',
                 true
             );
-            $answers['download_files'] = $this->helper->ask($input, $output, $question);
+            $answers['download_files'] = $this->questionHelper->ask($input, $output, $question);
         }
 
         $this->output->writeln(
@@ -91,7 +91,7 @@ class PullProjectCommand extends CommandBase
         ], $dir_name);
 
         if ($answers['vm']) {
-            $remote_alias = $answers['site'] . '.' . $answers['env'];
+            $remote_alias = $answers['ac']['site'] . '.' . $answers['ac']['env'];
             $this->executeCommands([
             "./vendor/bin/blt vm",
             ], $dir_name);
