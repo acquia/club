@@ -1,5 +1,5 @@
 {
-    "name": "acquia/blt-valet",
+    "name": "acquia/club",
     "description": "Allows BLT projects to be created or cloned from Acquia Cloud.",
     "type": "library",
     "require": {
