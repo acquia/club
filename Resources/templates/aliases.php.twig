@@ -6,6 +6,13 @@ if (!isset($drush_major_version)) {
 }
 
 {% for alias in aliases %}
+{% if alias["parent"] %}
+// Site {{alias["domain"]}}
+$aliases['{{alias["site"]}}'] = array(
+  'parent' => '{{alias["parent"]}}',
+  'uri' => '{{alias["uri"]}}',
+);
+{% else %}
 // Site {{alias["ac-site"]}}, environment {{alias["env-name"]}}
 $aliases['{{alias["ac-env"]}}'] = array(
   'root' => '{{alias["root"]}}',
@@ -23,4 +30,5 @@ $aliases['{{alias["ac-env"]}}.livedev'] = array(
   'parent' => '@{{alias["ac-site"]}}.{{alias["ac-env"]}}',
   'root' => '/mnt/gfs/{{alias["ac-site"]}}.{{alias["ac-env"]}}/livedev/docroot',
 );
+{% endif %}
 {% endfor %}
