@@ -84,6 +84,8 @@ abstract class CommandBase extends Command
         $this->drushAliasDir = $_SERVER['HOME'] . '/.drush';
         $this->cloudConfFileName = 'cloudapi.conf';
         $this->cloudConfFilePath = $this->cloudConfDir . '/' . $this->cloudConfFileName;
+        $this->cloudApiConfig = $this->loadCloudApiConfig();
+        $this->setCloudApiClient($this->cloudApiConfig['email'], $this->cloudApiConfig['key']);
     }
 
   /**

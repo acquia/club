@@ -14,11 +14,16 @@ use Symfony\Component\Console\Helper\ProgressBar;
 use Twig_Environment;
 use Twig_Loader_Filesystem;
 
+
 class AcAliasesCommand extends CommandBase
 {
 
   /** @var CloudApiClient */
     protected $cloudApiClient;
+
+    /** @var ProgressBar */
+    protected $progressBar;
+
 
     protected function configure()
     {
@@ -29,31 +34,14 @@ class AcAliasesCommand extends CommandBase
         ;
     }
 
-    /**
-     * Initializes the command just after the input has been validated.
-     *
-     * This is mainly useful when a lot of commands extends one main command
-     * where some things need to be initialized based on the input arguments and options.
-     *
-     * @param InputInterface  $input  An InputInterface instance
-     * @param OutputInterface $output An OutputInterface instance
-     */
-    protected function initialize(InputInterface $input, OutputInterface $output)
-    {
-        parent::initialize($input, $output);
-        $this->cloudApiConfig = $this->loadCloudApiConfig();
-        $this->setCloudApiClient($this->cloudApiConfig['email'], $this->cloudApiConfig['key']);
-    }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-
-        $helper = $this->getHelper('question');
         $question = new ConfirmationQuestion(
             '<comment>This will overwrite existing drush aliases. Do you want to continue?</comment> ',
             false
         );
-        $continue = $helper->ask($input, $output, $question);
+        $continue = $this->questionHelper->ask($input, $output, $question);
         if (!$continue) {
             return 1;
         }
@@ -64,28 +52,29 @@ class AcAliasesCommand extends CommandBase
         $sites = (array) $this->cloudApiClient->sites();
         $sitesCount = count($sites);
 
-        $progress = new ProgressBar($output, $sitesCount);
+        $this->progressBar = new ProgressBar($output, $sitesCount);
+
         $style = new OutputFormatterStyle('white', 'blue');
         $output->getFormatter()->setStyle('status', $style);
-        $progress->setFormat("<status> %current%/%max% [%bar%] %percent:3s%% \n %message%</status>");
-        $progress->setMessage('Starting Aliases sync...');
+        $this->progressBar->setFormat("<status> %current%/%max% subscriptions [%bar%] %percent:3s%% \n %message%</status>");
+        $this->progressBar->setMessage('Starting Aliases sync...');
         $this->output->writeln(
-            "<info>Found " . $sitesCount . " subscription(s). Gathering information about each.</info>"
+            "<info>Found " . $sitesCount . " subscription(s). Gathering information about each.</info>\n"
         );
         $errors = [];
+        $this->progressBar->setRedrawFrequency(0.1);
         foreach ($sites as $site) {
-            $progress->setMessage('Syncing: ' . $site);
+            $this->progressBar->setMessage('Syncing: ' . $site);
             try {
                 $this->getSiteAliases($site);
             } catch (\Exception $e) {
-                $errors[] = "Could not fetch alias data for $site.";
+                $errors[] = "Could not fetch alias data for $site. " . $e->getMessage();
                 // @todo Log error message.
             }
-            $progress->advance();
+            $this->progressBar->advance();
         }
-        $progress->setMessage("Syncing: complete. \n");
-        $progress->clear();
-        $progress->finish();
+        $this->progressBar->setMessage("Syncing: complete. \n");
+        $this->progressBar->finish();
 
         if ($errors) {
             $formatter = $this->getHelper('formatter');
@@ -113,7 +102,7 @@ class AcAliasesCommand extends CommandBase
             // Lets split the site name in the format ac-realm:ac-site
             $site_split = explode(':', $site);
             $siteRealm = $site_split[0];
-            $site_id = $site_split[1];
+            $siteID = $site_split[1];
 
             // Loop over all environments.
             foreach ($environments as $env) {
@@ -122,12 +111,12 @@ class AcAliasesCommand extends CommandBase
                 $uri = $env->defaultDomain();
                 $remoteHost = $env->sshHost();
                 $remoteUser = $env['unix_username'];
-                $docroot = '/var/www/html/' . $site_id . '.' . $envName . '/docroot';
+                $docroot = '/var/www/html/' . $siteID . '.' . $envName . '/docroot';
 
                 $aliases[$envName] = array(
                 'env-name' => $envName,
                 'root' => $docroot,
-                'ac-site' => $site_id,
+                'ac-site' => $siteID,
                 'ac-env' => $envName,
                 'ac-realm' => $siteRealm,
                 'uri' => $uri,
@@ -135,8 +124,43 @@ class AcAliasesCommand extends CommandBase
                 'remote-user' => $remoteUser,
                 );
             }
+            if ($siteRealm == 'enterprise-g1') {
+              $acsf_site_url = 'https://www.' . $siteID . '.acsitefactory.com';
+              if ($this->checkForACSFCredentials($siteID)) {
+                // @TODO: Ask the user if they want to update the credentials
+                $sites = $this->getACSFAliases($siteID, $acsf_site_url);
+                foreach ($sites as $site) {
+                  $aliases[$site->site] = array();
+                  $aliases[$site->site]['uri'] = $site->domain;
+                  $aliases[$site->site]['parent'] = '@' . $siteID . '.01_live';
+                  $aliases[$site->site]['site'] = $site->site;
+                }
+              } else {
+                $this->progressBar->clear();
+                $question = new ConfirmationQuestion(
+                    "<comment>Looks like we found an Acquia Cloud Site Factory Instance named <info>" . $siteID . "</info>. \nIn order to setup aliases for each site you will need the proper API key found at <info>" . $acsf_site_url . "</info>. \nDo you want to continue? [y/n]:</comment> ",
+                    false
+                );
+                $continue = $this->questionHelper->ask($this->input, $this->output, $question);
+                if ($continue) {
+                  $this->askForACSFCredentials($siteID);
+                  $this->getACSFAliases($siteID, $acsf_site_url);
+                } else {
+                  $config = $this->cloudApiConfig;
+                  $acsfConfig = array( "$siteID" => array(
+                    'username' => '',
+                    'apikey' => '',
+                    'enabled' => false
+                    )
+                  );
+                  $config = array_merge_recursive($config, $acsfConfig);
+                  $this->writeCloudApiConfig($config);
+                }
+              }
 
-            $this->writeSiteAliases($site_id, $aliases);
+              $this->progressBar->display();
+            }
+            $this->writeSiteAliases($siteID, $aliases);
         }
     }
 
@@ -151,4 +175,88 @@ class AcAliasesCommand extends CommandBase
         // Write to file.
         file_put_contents($aliasesFileName, $aliasesRender);
     }
+
+    protected function getACSFAliases($siteID, $acsf_site_url) {
+
+      $username = $this->cloudApiConfig[$siteID]['username'];
+      $apikey = $this->cloudApiConfig[$siteID]['apikey'];
+      $creds = base64_encode($username . ':' . $apikey);
+
+      try {
+        $sitesList = $this->curlCallToURL($acsf_site_url, $creds);
+        $count = $sitesList['count'];
+        if ($count > 100) {
+          $numberOfPages = $count / 100;
+          for ($i=2; $i <= ceil($numberOfPages) ; $i++) {
+            $sitesList = array_merge_recursive($sitesList, $this->curlCallToURL($acsf_site_url, $creds, $i));
+          }
+        }
+        return $sitesList['sites'];
+      } catch (Exception $e) {
+        $this->output->writeln("<error>Failed to authenticate with Acquia Cloud API.</error>");
+        return false;
+      }
+    }
+
+
+
+    protected function checkForACSFCredentials($siteId) {
+      if (isset($this->cloudApiConfig[$siteId])) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+
+    /**
+     *
+     */
+      protected function askForACSFCredentials($siteId)
+      {
+          $usernameQuestion = new Question('<question>Please enter your ACSF username:</question> ', '');
+          $privateKeyQuestion = new Question('<question>Please enter your ACSF API key:</question> ', '');
+          $privateKeyQuestion->setHidden(true);
+          $username = $this->questionHelper->ask($this->input, $this->output, $usernameQuestion);
+          $apikey = $this->questionHelper->ask($this->input, $this->output, $privateKeyQuestion);
+
+          $config = $this->cloudApiConfig;
+          $acsfConfig = array( "$siteId" => array(
+              'username' => $username,
+              'apikey' => $apikey,
+              'enabled' => true
+            )
+          );
+          $this->cloudApiConfig = array_merge_recursive($config, $acsfConfig);
+          $this->writeCloudApiConfig($this->cloudApiConfig);
+      }
+
+
+      protected function curlCallToURL($url, $creds, $page = 1, $limit = 100) {
+        $full_url = $url . '/api/v1/sites?limit=' . $limit . '&page=' . $page;
+        // Get cURL resource
+        $ch = curl_init();
+        // Set url
+        curl_setopt($ch, CURLOPT_URL, $full_url);
+        // Set method
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
+        // Set options
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        // Set headers
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+          "Authorization: Basic " . $creds,
+         ]
+        );
+        // Send the request & save response to $resp
+        $resp = curl_exec($ch);
+
+        if(!$resp) {
+          die('Error: "' . curl_error($ch) . '" - Code: ' . curl_errno($ch));
+        }
+        if ( curl_getinfo($ch, CURLINFO_HTTP_CODE) == 403) {
+          throw new \Exception('API Authorization failed.');
+        }
+        // Close request to clear up some resources
+        curl_close($ch);
+        return (array)json_decode($resp);
+      }
 }
