@@ -11,7 +11,7 @@ In seeking help, please keep the following points in mind:
 * Club is distributed under the GPLv2 license; WITHOUT ANY WARRANTY.
 * All contributions to Club will be reviewed for compliance with Drupal Coding Standards and best practices as defined by the project maintainer.
 
-## Contributing to Club
+# Contributing to Club
 
     git clone https://github.com/acquia/club.git
     composer install --working-dir=club
