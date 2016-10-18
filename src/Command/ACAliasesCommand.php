@@ -14,7 +14,6 @@ use Symfony\Component\Console\Helper\ProgressBar;
 use Twig_Environment;
 use Twig_Loader_Filesystem;
 
-
 class AcAliasesCommand extends CommandBase
 {
 
@@ -126,40 +125,40 @@ class AcAliasesCommand extends CommandBase
                 );
             }
             if ($siteRealm == 'enterprise-g1') {
-              $acsf_site_url = 'https://www.' . $siteID . '.acsitefactory.com';
-              if ($this->checkForACSFCredentials($siteID)) {
-                // @TODO: Ask the user if they want to update the credentials
-                $sites = $this->getACSFAliases($siteID, $acsf_site_url);
-                foreach ($sites as $site) {
-                  $aliases[$site->site] = array();
-                  $aliases[$site->site]['uri'] = $site->domain;
-                  $aliases[$site->site]['parent'] = '@' . $siteID . '.01_live';
-                  $aliases[$site->site]['site'] = $site->site;
-                }
-              } else {
-                $this->progressBar->clear();
-                $question = new ConfirmationQuestion(
-                    "<comment>Found an Acquia Cloud Site Factory instance named <info>" . $siteID . "</info>.\nTo setup aliases for this instance you will need an instance-specific API key found at <info>" . $acsf_site_url . "</info>. \nDo you want to download aliases for this instance? [y/n]:</comment> ",
-                    false
-                );
-                $continue = $this->questionHelper->ask($this->input, $this->output, $question);
-                if ($continue) {
-                  $this->askForACSFCredentials($siteID);
-                  $this->getACSFAliases($siteID, $acsf_site_url);
+                $acsf_site_url = 'https://www.' . $siteID . '.acsitefactory.com';
+                if ($this->checkForACSFCredentials($siteID)) {
+                    // @TODO: Ask the user if they want to update the credentials
+                    $sites = $this->getACSFAliases($siteID, $acsf_site_url);
+                    foreach ($sites as $site) {
+                        $aliases[$site->site] = array();
+                        $aliases[$site->site]['uri'] = $site->domain;
+                        $aliases[$site->site]['parent'] = '@' . $siteID . '.01_live';
+                        $aliases[$site->site]['site'] = $site->site;
+                    }
                 } else {
-                  $config = $this->cloudApiConfig;
-                  $acsfConfig = array( "$siteID" => array(
-                    'username' => '',
-                    'apikey' => '',
-                    'enabled' => false
-                    )
-                  );
-                  $config = array_merge_recursive($config, $acsfConfig);
-                  $this->writeCloudApiConfig($config);
+                    $this->progressBar->clear();
+                    $question = new ConfirmationQuestion(
+                        "<comment>Found an Acquia Cloud Site Factory instance named <info>" . $siteID . "</info>.\nTo setup aliases for this instance you will need an instance-specific API key found at <info>" . $acsf_site_url . "</info>. \nDo you want to download aliases for this instance? [y/n]:</comment> ",
+                        false
+                    );
+                    $continue = $this->questionHelper->ask($this->input, $this->output, $question);
+                    if ($continue) {
+                        $this->askForACSFCredentials($siteID);
+                        $this->getACSFAliases($siteID, $acsf_site_url);
+                    } else {
+                        $config = $this->cloudApiConfig;
+                        $acsfConfig = array( "$siteID" => array(
+                        'username' => '',
+                        'apikey' => '',
+                        'enabled' => false
+                        )
+                        );
+                        $config = array_merge_recursive($config, $acsfConfig);
+                        $this->writeCloudApiConfig($config);
+                    }
                 }
-              }
 
-              $this->progressBar->display();
+                $this->progressBar->display();
             }
             $this->writeSiteAliases($siteID, $aliases);
         }
@@ -177,62 +176,65 @@ class AcAliasesCommand extends CommandBase
         file_put_contents($aliasesFileName, $aliasesRender);
     }
 
-    protected function getACSFAliases($siteID, $acsf_site_url) {
+    protected function getACSFAliases($siteID, $acsf_site_url)
+    {
 
-      $username = $this->cloudApiConfig[$siteID]['username'];
-      $apikey = $this->cloudApiConfig[$siteID]['apikey'];
-      $creds = base64_encode($username . ':' . $apikey);
+        $username = $this->cloudApiConfig[$siteID]['username'];
+        $apikey = $this->cloudApiConfig[$siteID]['apikey'];
+        $creds = base64_encode($username . ':' . $apikey);
 
-      try {
-        $sitesList = $this->curlCallToURL($acsf_site_url, $creds);
-        $count = $sitesList['count'];
-        if ($count > 100) {
-          $numberOfPages = $count / 100;
-          for ($i=2; $i <= ceil($numberOfPages) ; $i++) {
-            $sitesList = array_merge_recursive($sitesList, $this->curlCallToURL($acsf_site_url, $creds, $i));
-          }
+        try {
+            $sitesList = $this->curlCallToURL($acsf_site_url, $creds);
+            $count = $sitesList['count'];
+            if ($count > 100) {
+                $numberOfPages = $count / 100;
+                for ($i=2; $i <= ceil($numberOfPages); $i++) {
+                    $sitesList = array_merge_recursive($sitesList, $this->curlCallToURL($acsf_site_url, $creds, $i));
+                }
+            }
+            return $sitesList['sites'];
+        } catch (Exception $e) {
+            $this->output->writeln("<error>Failed to authenticate with Acquia Cloud API.</error>");
+            return false;
         }
-        return $sitesList['sites'];
-      } catch (Exception $e) {
-        $this->output->writeln("<error>Failed to authenticate with Acquia Cloud API.</error>");
-        return false;
-      }
     }
 
 
 
-    protected function checkForACSFCredentials($siteId) {
-      if (isset($this->cloudApiConfig[$siteId])) {
-        return true;
-      } else {
-        return false;
-      }
+    protected function checkForACSFCredentials($siteId)
+    {
+        if (isset($this->cloudApiConfig[$siteId])) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
      *
      */
-      protected function askForACSFCredentials($siteId)
-      {
-          $usernameQuestion = new Question("<question>Please enter your ACSF username for $siteId</question>: ", '');
-          $privateKeyQuestion = new Question("<question>Please enter your ACSF API key for $siteId</question>: ", '');
-          $privateKeyQuestion->setHidden(true);
-          $username = $this->questionHelper->ask($this->input, $this->output, $usernameQuestion);
-          $apikey = $this->questionHelper->ask($this->input, $this->output, $privateKeyQuestion);
+    protected function askForACSFCredentials($siteId)
+    {
+        $usernameQuestion = new Question("<question>Please enter your ACSF username for $siteId</question>: ", '');
+        $privateKeyQuestion = new Question("<question>Please enter your ACSF API key for $siteId</question>: ", '');
+        $privateKeyQuestion->setHidden(true);
+        $username = $this->questionHelper->ask($this->input, $this->output, $usernameQuestion);
+        $apikey = $this->questionHelper->ask($this->input, $this->output, $privateKeyQuestion);
 
-          $config = $this->cloudApiConfig;
-          $acsfConfig = array( "$siteId" => array(
-              'username' => $username,
-              'apikey' => $apikey,
-              'enabled' => true
-            )
-          );
-          $this->cloudApiConfig = array_merge_recursive($config, $acsfConfig);
-          $this->writeCloudApiConfig($this->cloudApiConfig);
-      }
+        $config = $this->cloudApiConfig;
+        $acsfConfig = array( "$siteId" => array(
+          'username' => $username,
+          'apikey' => $apikey,
+          'enabled' => true
+        )
+        );
+        $this->cloudApiConfig = array_merge_recursive($config, $acsfConfig);
+        $this->writeCloudApiConfig($this->cloudApiConfig);
+    }
 
 
-      protected function curlCallToURL($url, $creds, $page = 1, $limit = 100) {
+    protected function curlCallToURL($url, $creds, $page = 1, $limit = 100)
+    {
         $full_url = $url . '/api/v1/sites?limit=' . $limit . '&page=' . $page;
         // Get cURL resource
         $ch = curl_init();
@@ -244,20 +246,19 @@ class AcAliasesCommand extends CommandBase
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         // Set headers
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
-          "Authorization: Basic " . $creds,
-         ]
-        );
+        "Authorization: Basic " . $creds,
+        ]);
         // Send the request & save response to $resp
         $resp = curl_exec($ch);
 
-        if(!$resp) {
-          die('Error: "' . curl_error($ch) . '" - Code: ' . curl_errno($ch));
+        if (!$resp) {
+            die('Error: "' . curl_error($ch) . '" - Code: ' . curl_errno($ch));
         }
-        if ( curl_getinfo($ch, CURLINFO_HTTP_CODE) == 403) {
-          throw new \Exception('API Authorization failed.');
+        if (curl_getinfo($ch, CURLINFO_HTTP_CODE) == 403) {
+            throw new \Exception('API Authorization failed.');
         }
         // Close request to clear up some resources
         curl_close($ch);
         return (array)json_decode($resp);
-      }
+    }
 }
