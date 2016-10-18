@@ -274,6 +274,7 @@ abstract class CommandBase extends Command
                     }
                 }
 
+                $this->fs->chmod($destination_dir . '/docroot/sites/default/default.settings.php', 777);
                 $this->fs->remove($destination_dir);
             } else {
                 $this->output->writeln(
