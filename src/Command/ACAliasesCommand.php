@@ -68,8 +68,8 @@ class AcAliasesCommand extends CommandBase
             try {
                 $this->getSiteAliases($site);
             } catch (\Exception $e) {
-                $errors[] = "Could not fetch alias data for $site. " . $e->getMessage();
-                // @todo Log error message.
+                $errors[] = "Could not fetch alias data for $site.";
+                $this->output->writeln($e->getMessage(), OutputInterface::VERBOSITY_VERBOSE);
             }
             $this->progressBar->advance();
         }
