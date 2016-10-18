@@ -110,6 +110,12 @@ class CreateProjectCommand extends CommandBase
             // $question = new ConfirmationQuestion("<question>Do you want to install Drupal on Acquia Cloud's {$answers['env']}?</question> <info>[yes]</info> ", true);
             // $answers['ac']['install'] = $this->questionHelper->ask($this->input, $this->output, $question);
         }
+
+        $this->output->writeln("<info>Your project was created in $cwd.</info>");
+        if ($answers['vm']) {
+            $this->output->writeln("<info>A virtual machine was created. You can login to your site by running:</info>");
+            $this->output->writeln("<comment>drush @{$answers['machine_name']}.local</comment>");
+        }
     }
 
     /**

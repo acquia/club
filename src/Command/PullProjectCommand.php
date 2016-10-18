@@ -2,6 +2,7 @@
 
 namespace Acquia\Club\Command;
 
+use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
@@ -57,8 +58,14 @@ class PullProjectCommand extends CommandBase
         "git clone {$site->vcsUrl()} $dir_name",
         ]);
 
-        $composer_lock = json_decode(file_get_contents($dir_name . '/composer.lock'), true);
-        $this->verifyBltVersion($composer_lock);
+        if (file_exists($dir_name . '/composer.lock')) {
+            $composer_lock = json_decode(file_get_contents($dir_name . '/composer.lock'), true);
+            $this->verifyBltVersion($composer_lock);
+        }
+        else {
+            $this->output->writeln("<error>No composer.lock file was found in the repository. Is this BLT project?");
+            exit(1);
+        }
 
         $this->output->writeln(
             "<info>Great. Now let's make some choices about how your project will be set up locally."
@@ -113,9 +120,17 @@ class PullProjectCommand extends CommandBase
                 ], $dir_name . '/docroot');
             }
 
+            // @todo Derive the local alias from project.local.yml's drush.aliases.local.
+            $local_alias = "@{$answers['machine_name']}.local";
             $this->executeCommands([
-            "./vendor/bin/drush @{$answers['machine_name']}.local uli",
+                "./vendor/bin/drush $local_alias uli",
             ], $dir_name);
+        }
+
+        $this->output->writeln("<info>Your project was cloned to $dir_name.</info>");
+        if ($answers['vm']) {
+            $this->output->writeln("<info>A virtual machine was created. You can login to your site by running:</info>");
+            $this->output->writeln("<comment>drush @{$answers['machine_name']}.local</comment>");
         }
     }
 
