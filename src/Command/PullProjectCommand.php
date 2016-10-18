@@ -61,8 +61,7 @@ class PullProjectCommand extends CommandBase
         if (file_exists($dir_name . '/composer.lock')) {
             $composer_lock = json_decode(file_get_contents($dir_name . '/composer.lock'), true);
             $this->verifyBltVersion($composer_lock);
-        }
-        else {
+        } else {
             $this->output->writeln("<error>No composer.lock file was found in the repository. Is this BLT project?");
             exit(1);
         }
