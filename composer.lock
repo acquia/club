@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "1fadd28d38e39562798989ac7b6e4e40",
-    "content-hash": "8e581b5d9bd5d61cba22d2300f4c9b00",
+    "hash": "a3d517ebcf587c3cc49213e5fcbc171e",
+    "content-hash": "fcb0300fe13544c5cd76e33651c627e6",
     "packages": [
         {
             "name": "acquia/acquia-sdk-php-cloud-api",

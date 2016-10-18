@@ -68,12 +68,13 @@ class AcAliasesCommand extends CommandBase
             try {
                 $this->getSiteAliases($site);
             } catch (\Exception $e) {
-                $errors[] = "Could not fetch alias data for $site. " . $e->getMessage();
-                // @todo Log error message.
+                $errors[] = "Could not fetch alias data for $site.";
+                $this->output->writeln($e->getMessage(), OutputInterface::VERBOSITY_VERBOSE);
             }
             $this->progressBar->advance();
         }
         $this->progressBar->setMessage("Syncing: complete. \n");
+        $this->progressBar->clear();
         $this->progressBar->finish();
 
         if ($errors) {
@@ -138,7 +139,7 @@ class AcAliasesCommand extends CommandBase
               } else {
                 $this->progressBar->clear();
                 $question = new ConfirmationQuestion(
-                    "<comment>Looks like we found an Acquia Cloud Site Factory Instance named <info>" . $siteID . "</info>. \nIn order to setup aliases for each site you will need the proper API key found at <info>" . $acsf_site_url . "</info>. \nDo you want to continue? [y/n]:</comment> ",
+                    "<comment>Found an Acquia Cloud Site Factory instance named <info>" . $siteID . "</info>.\nTo setup aliases for this instance you will need an instance-specific API key found at <info>" . $acsf_site_url . "</info>. \nDo you want to download aliases for this instance? [y/n]:</comment> ",
                     false
                 );
                 $continue = $this->questionHelper->ask($this->input, $this->output, $question);
@@ -213,8 +214,8 @@ class AcAliasesCommand extends CommandBase
      */
       protected function askForACSFCredentials($siteId)
       {
-          $usernameQuestion = new Question('<question>Please enter your ACSF username:</question> ', '');
-          $privateKeyQuestion = new Question('<question>Please enter your ACSF API key:</question> ', '');
+          $usernameQuestion = new Question("<question>Please enter your ACSF username for $siteId</question>: ", '');
+          $privateKeyQuestion = new Question("<question>Please enter your ACSF API key for $siteId</question>: ", '');
           $privateKeyQuestion->setHidden(true);
           $username = $this->questionHelper->ask($this->input, $this->output, $usernameQuestion);
           $apikey = $this->questionHelper->ask($this->input, $this->output, $privateKeyQuestion);
