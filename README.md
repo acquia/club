@@ -59,6 +59,4 @@ For the following commands to work, you will need access to your Acquia Cloud AP
 
 ## Contributing to Club
 
-    git clone https://github.com/acquia/club.git
-    composer install --working-dir=club
-    ./club/bin/club list
+Please see [CONTRIBUTING.md](CONTRIBUTING.md)
