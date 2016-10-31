@@ -48,7 +48,7 @@ mv club.phar /usr/local/bin/club
 git clone https://github.com/acquia/club.git
 cd club
 composer install
-box build
+./vendor/bin/box build
 chmod u+x club.phar
 mv club.phar /usr/local/bin/club
 ```
