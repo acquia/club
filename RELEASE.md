@@ -8,15 +8,21 @@ git tag VERSION_NUMBER
 git push origin master
 ```
 
-# Building a phar file
+## Building a phar file
 ```
 ./vendor/bin/box build
 ```
 
+## Github steps
+1. Create a new [release](https://github.com/acquia/club/releases/new])
+2. Add Release notes with [changelog generator](https://github.com/skywinder/github-changelog-generator)
+3. Upload club.phar
+4. Click Publish release
+
 
 
 ## Troubleshooting.
-### Build Fails
+### Box phar build fails
 Symfony has an issue when building phars sometimes and errors with the following:
 ```
 PHP Fatal error:  Uncaught exception 'ErrorException' with message 'proc_open(): unable to create pipe Too many open files' in phar:///usr/local/bin/box.phar/src/vendors/symfony/console/Application.php:954
