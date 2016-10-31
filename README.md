@@ -37,7 +37,7 @@ brew install club
 ### Manual phar install
 
 ```
-wget http://https://github.com/acquia/club/releases/download/0.1/club.phar
+wget https://github.com/acquia/club/releases/download/0.1/club.phar
 mv club.phar /usr/local/bin
 ```
 
