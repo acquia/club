@@ -37,3 +37,6 @@
 
 # Config file
 /config/
+
+#Club PHAR
+/club.phar
