@@ -28,6 +28,7 @@
 Currently `club` supports 3 installation methods. Preferred installation method is homebrew as it will ensure all dependencies are install on your system.
 
 ### Homebrew
+[Currently waiting on this PR](https://github.com/Homebrew/homebrew-php/pull/3749)
 ```
 brew tap homebrew/php
 brew install club
@@ -36,7 +37,7 @@ brew install club
 ### Manual phar install
 
 ```
-wget http://linktocustom.phar
+wget http://https://github.com/acquia/club/releases/download/0.1/club.phar
 mv club.phar /usr/local/bin
 ```
 
