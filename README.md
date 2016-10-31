@@ -37,8 +37,9 @@ brew install club
 ### Manual phar install
 
 ```
-wget https://github.com/acquia/club/releases/download/0.1/club.phar
-mv club.phar /usr/local/bin
+curl -OL http://github.com/acquia/club/releases/download/0.1/club.phar
+chmod u+x club.phar
+mv club.phar /usr/local/bin/club
 ```
 
 ### Manual git checkout
@@ -48,7 +49,8 @@ git clone https://github.com/acquia/club.git
 cd club
 composer install
 box build
-mv club.phar /usr/local/bin
+chmod u+x club.phar
+mv club.phar /usr/local/bin/club
 ```
 
 ## Usage
