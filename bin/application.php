@@ -5,7 +5,7 @@ require __DIR__ . '/../vendor/autoload.php';
 
 use Acquia\Club\Command\CreateProjectCommand;
 use Acquia\Club\Command\PullProjectCommand;
-use Acquia\Club\Command\AcAliasesCommand;
+use Acquia\Club\Command\ACAliasesCommand;
 use Symfony\Component\Console\Application;
 
 $application = new Application('club', '@package_version@');
