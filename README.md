@@ -30,7 +30,7 @@ Currently `club` supports 3 installation methods. Preferred installation method 
 ### Homebrew
 [Currently waiting on this PR](https://github.com/Homebrew/homebrew-php/pull/3749)
 ```
-brew tap homebrew/php
+brew tap acquia/tools
 brew install club
 ```
 
