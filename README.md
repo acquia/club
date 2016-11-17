@@ -28,7 +28,6 @@
 Currently `club` supports 3 installation methods. Preferred installation method is homebrew as it will ensure all dependencies are install on your system.
 
 ### Homebrew
-[Currently waiting on this PR](https://github.com/Homebrew/homebrew-php/pull/3749)
 ```
 brew tap acquia/tools
 brew install club
