@@ -29,8 +29,7 @@ Currently `club` supports 3 installation methods. Preferred installation method 
 
 ### Homebrew
 ```
-brew tap acquia/tools
-brew install club
+brew install acquia/tools/club
 ```
 
 ### Manual phar install
