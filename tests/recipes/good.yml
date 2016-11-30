@@ -2,3 +2,10 @@ human_name: "Test Project"
 machine_name: "test_project"
 prefix: "TP"
 vm: false
+ingredients:
+  - acquia-blog
+ci:
+  provider: pipelines
+ac:
+  site: blted8
+  env: dev
