@@ -202,6 +202,7 @@ class CreateProjectCommand extends CommandBase
                 unset($answers['features'][$key]);
             }
 
+            // @todo add ingredients to lightning.extend.yml.
         }
 
         return $answers;
