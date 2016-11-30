@@ -53,7 +53,7 @@ class CreateProjectCommand extends CommandBase
 
         $recipe_filename = $input->getOption('recipe');
         if ($recipe_filename) {
-            $answers = $this->loadRecipe($recipe_filename);
+            $answers = $this->loadConfigFile($recipe_filename);
             $this->checkDestinationDir($answers['machine_name']);
         } else {
             $answers = $this->askForAnswers();
@@ -123,7 +123,7 @@ class CreateProjectCommand extends CommandBase
      *
      * @return array
      */
-    protected function loadRecipe($filename)
+    protected function loadConfigFile($filename)
     {
         if (!file_exists($filename)) {
             throw new FileNotFoundException($filename);
@@ -182,6 +182,28 @@ class CreateProjectCommand extends CommandBase
         // $question = new ConfirmationQuestion('<question>Do you want to create an Acquia Cloud free tier site for this project?</question> ', false);
         // $create_acf_site = $helper->ask($input, $output, $question);
 
+        $question = new ConfirmationQuestion('<question>Do you want to add default ingredients?</question> <info>[yes]</info> ', true);
+        $ingredients = $this->questionHelper->ask($this->input, $this->output, $question);
+        if ($ingredients) {
+            $done_value = 'done';
+            $available_ingredients_config = Yaml::parse(file_get_contents(__DIR__ . '/../../Resources/available_ingredients.yml'));
+            $available_ingredients = $available_ingredients_config['available_ingredients'];
+            array_unshift($available_ingredients, $done_value);
+            $i = 0;
+            $answers['features'] = [];
+            do {
+                $i++;
+                $available_ingredients = array_diff($available_ingredients, $answers['features']);
+                $question = new ChoiceQuestion("<question>Choose an ingredient: </question> <info>Choose $done_value empty to finish.</info>", $available_ingredients);
+                $answers['features'][$i] = $this->questionHelper->ask($this->input, $this->output, $question);
+                $this->output->writeln("<info>" . $answers['features'][$i] . " added</info>");
+            } while($answers['features'][$i] != $done_value);
+            if (($key = array_search($done_value, $answers['features'])) !== false) {
+                unset($answers['features'][$key]);
+            }
+
+        }
+
         return $answers;
     }
 
@@ -195,8 +217,15 @@ class CreateProjectCommand extends CommandBase
         $this->executeCommands([
             "composer create-project acquia/blt-project:~8 {$answers['machine_name']} --no-interaction",
         ]);
-
         $this->updateProjectYml($answers);
+
+        if (!empty($answers['features'])) {
+            $cwd = getcwd() . '/' . $answers['machine_name'];
+            foreach ($answers['features'] as $feature) {
+                $this->executeCommand("composer require acquia-pso/$feature --no-update", $cwd);
+            }
+            $this->executeCommand("composer update", $cwd);
+        }
 
         $this->output->writeln("<info>Your project has been created locally.</info>");
     }
