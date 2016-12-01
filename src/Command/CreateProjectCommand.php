@@ -197,7 +197,7 @@ class CreateProjectCommand extends CommandBase
                 $question = new ChoiceQuestion("<question>Choose an ingredient: </question> <info>Choose $done_value empty to finish.</info>", $available_ingredients);
                 $answers['features'][$i] = $this->questionHelper->ask($this->input, $this->output, $question);
                 $this->output->writeln("<info>" . $answers['features'][$i] . " added</info>");
-            } while($answers['features'][$i] != $done_value);
+            } while ($answers['features'][$i] != $done_value);
             if (($key = array_search($done_value, $answers['features'])) !== false) {
                 unset($answers['features'][$key]);
             }
