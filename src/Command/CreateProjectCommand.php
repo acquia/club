@@ -70,7 +70,12 @@ class CreateProjectCommand extends CommandBase
 
         $cwd = getcwd() . '/' . $answers['machine_name'];
         if ($answers['vm']) {
-            $this->createVm($answers);
+            try {
+                $this->createVm($answers);
+            } catch (\Exception $e) {
+                $this->output->writeln("<error>Something went wrong with your VM initialization. Continuing setup...</error>");
+                // @todo run "vagrant destroy." and remove local.project.yml.
+            }
         }
 
         if (!empty($answers['ci']['provider'])) {
@@ -194,15 +199,13 @@ class CreateProjectCommand extends CommandBase
             do {
                 $i++;
                 $available_ingredients = array_diff($available_ingredients, $answers['features']);
-                $question = new ChoiceQuestion("<question>Choose an ingredient: </question> <info>Choose $done_value empty to finish.</info>", $available_ingredients);
+                $question = new ChoiceQuestion("<question>Choose an ingredient: </question> <info>Choose [0] $done_value to finish.</info>", $available_ingredients);
                 $answers['features'][$i] = $this->questionHelper->ask($this->input, $this->output, $question);
                 $this->output->writeln("<info>" . $answers['features'][$i] . " added</info>");
             } while ($answers['features'][$i] != $done_value);
             if (($key = array_search($done_value, $answers['features'])) !== false) {
                 unset($answers['features'][$key]);
             }
-
-            // @todo add ingredients to lightning.extend.yml.
         }
 
         return $answers;
@@ -213,20 +216,31 @@ class CreateProjectCommand extends CommandBase
      */
     protected function createProject($answers)
     {
-        $this->output->writeln("<info>Awesome. Let's create your project. This could take a while...");
+        $this->output->writeln("<info>Awesome. Let's create your project. This could take a while...</info>");
 
         $this->executeCommands([
             "composer create-project acquia/blt-project:~8 {$answers['machine_name']} --no-interaction",
         ]);
+
+        $project_dir = getcwd() . '/' . $answers['machine_name'];
+
         $this->updateProjectYml($answers);
 
         if (!empty($answers['features'])) {
-            $cwd = getcwd() . '/' . $answers['machine_name'];
             foreach ($answers['features'] as $feature) {
-                $this->executeCommand("composer require acquia-pso/$feature --no-update", $cwd);
+                $this->executeCommand("composer require acquia-pso/$feature --no-update", $project_dir);
             }
-            $this->executeCommand("composer update", $cwd);
+            $this->executeCommand("composer update", $project_dir);
         }
+
+        $lightning_extend_filename = $project_dir . '/docroot/sites/default/lightning.extend.yml';
+        $this->fs->copy($project_dir . '/docroot/profiles/contrib/lightning/lightning.extend.yml', $lightning_extend_filename);
+        $lightning_extend = Yaml::parse(file_get_contents($lightning_extend_filename));
+        if (!empty($answers['features'])) {
+            $lightning_extend['modules'] = $answers['features'];
+        }
+
+        file_put_contents($lightning_extend_filename, Yaml::dump($lightning_extend));
 
         $this->output->writeln("<info>Your project has been created locally.</info>");
     }
@@ -234,7 +248,7 @@ class CreateProjectCommand extends CommandBase
     protected function updateProjectYml($answers)
     {
         $cwd = getcwd() . '/' . $answers['machine_name'];
-        $config_file = $cwd . '/project.yml';
+        $config_file = $cwd . '/blt/project.yml';
         $config = Yaml::parse(file_get_contents($config_file));
         $config['project']['prefix'] = $answers['prefix'];
         $config['project']['machine_name'] = $answers['machine_name'];

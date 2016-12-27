@@ -153,6 +153,7 @@ class AcAliasesCommand extends CommandBase
                         'enabled' => false
                         )
                         );
+                        // @todo this fails when "n" is selected
                         $config = array_merge_recursive($config, $acsfConfig);
                         $this->writeCloudApiConfig($config);
                     }
@@ -193,8 +194,8 @@ class AcAliasesCommand extends CommandBase
                 }
             }
             return $sitesList['sites'];
-        } catch (Exception $e) {
-            $this->output->writeln("<error>Failed to authenticate with Acquia Cloud API.</error>");
+        } catch (\Exception $e) {
+            $this->output->writeln("<error>Failed to load ACSF sites.</error>");
             return false;
         }
     }
