@@ -238,7 +238,11 @@ abstract class CommandBase extends Command
 
             return $cloudapi;
         } catch (\Exception $e) {
+            // @todo this is being thrown after first auth. still works? check out.
             $this->output->writeln("<error>Failed to authenticate with Acquia Cloud API.</error>");
+            if ($this->output->getVerbosity() >= OutputInterface::VERBOSITY_VERBOSE) {
+                $this->output->writeln('Exception was thrown: ' . $e->getMessage());
+            }
             return null;
         }
     }
@@ -273,6 +277,7 @@ abstract class CommandBase extends Command
                     }
                 }
 
+                // @todo recursively chmod all files in docroot/sites/default.
                 $this->fs->chmod($destination_dir . '/docroot/sites/default/default.settings.php', 777);
                 $this->fs->remove($destination_dir);
             } else {
@@ -393,6 +398,7 @@ abstract class CommandBase extends Command
         'COMPOSER_PROCESS_TIMEOUT' => $timeout
         ] + $_ENV;
         $process = new Process($command, $cwd, $env, null, $timeout);
+        $process->setTty(true);
         $method = $mustRun ? 'mustRun' : 'run';
 
         if ($display_output) {
