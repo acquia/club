@@ -88,7 +88,7 @@ class CreateProjectCommand extends CommandBase
         $ac = $this->questionHelper->ask($this->input, $this->output, $question);
         if ($ac) {
             $this->cloudApiConfig = $this->loadCloudApiConfig();
-            $this->setCloudApiClient($this->cloudApiConfig['email'], $this->cloudApiClient['key']);
+            $this->setCloudApiClient($this->cloudApiConfig['email'], $this->cloudApiConfig['key']);
             $cloud_api_client = $this->getCloudApiClient();
             $answers['ac']['site'] = $this->askWhichCloudSite($cloud_api_client);
             $site = $this->getSiteByLabel($cloud_api_client, $answers['ac']['site']);
