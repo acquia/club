@@ -1,8 +1,7 @@
 # Change Log
 
-## [Unreleased](https://github.com/acquia/club/tree/HEAD)
-
-[Full Changelog](https://github.com/acquia/club/compare/0.2...HEAD)
+## [0.3](https://github.com/acquia/club/tree/0.3) (2017-01-04)
+[Full Changelog](https://github.com/acquia/club/compare/0.2...0.3)
 
 **Fixed bugs:**
 
