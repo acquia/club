@@ -129,61 +129,61 @@ class AcAliasesCommand extends CommandBase
                     // @TODO: Ask the user if they want to update the credentials
                     $sites = $this->getACSFAliases($siteID, $acsf_site_url, $errors);
                     if (!empty($sites)) {
-                      $prod_group = array();
-                      $stage_group = array();
-                      $dev_group = array();
-                      foreach ($sites as $site) {
-                        // Configure prod aliases
-                        $site_alias =  $site->site . '.prod';
-                        $env = '.01live';
-                        $aliases[$site_alias] = array();
-                        $aliases[$site_alias]['uri'] = $site->domain;
-                        $aliases[$site_alias]['parent'] = '@' . $siteID . $env;
-                        $aliases[$site_alias]['site'] = $site_alias;
-                        // Configure prod group
-                        $prod_group[] = '@' . $site_alias;
-                        // Configure stage aliases
-                        $site_alias =  $site->site . '.stage';
-                        $env = '.01test';
-                        $aliases[$site_alias] = array();
-                        $aliases[$site_alias]['uri'] = $site->domain;
-                        $aliases[$site_alias]['parent'] = '@' . $siteID . $env;
-                        $aliases[$site_alias]['site'] = $site_alias;
+                        $prod_group = array();
+                        $stage_group = array();
+                        $dev_group = array();
+                        foreach ($sites as $site) {
+                            // Configure prod aliases
+                            $site_alias =  $site->site . '.prod';
+                            $env = '.01live';
+                            $aliases[$site_alias] = array();
+                            $aliases[$site_alias]['uri'] = $site->domain;
+                            $aliases[$site_alias]['parent'] = '@' . $siteID . $env;
+                            $aliases[$site_alias]['site'] = $site_alias;
+                            // Configure prod group
+                            $prod_group[] = '@' . $site_alias;
+                            // Configure stage aliases
+                            $site_alias =  $site->site . '.stage';
+                            $env = '.01test';
+                            $aliases[$site_alias] = array();
+                            $aliases[$site_alias]['uri'] = $site->domain;
+                            $aliases[$site_alias]['parent'] = '@' . $siteID . $env;
+                            $aliases[$site_alias]['site'] = $site_alias;
 
-                        // Configure stage group
-                        $stage_group[] = '@' . $site_alias;
+                            // Configure stage group
+                            $stage_group[] = '@' . $site_alias;
 
-                        // Configure stage aliases
-                        $site_alias =  $site->site . '.dev';
-                        $env = '.01dev';
-                        $aliases[$site_alias] = array();
-                        $aliases[$site_alias]['uri'] = $site->domain;
-                        $aliases[$site_alias]['parent'] = '@' . $siteID . $env;
-                        $aliases[$site_alias]['site'] = $site_alias;
+                            // Configure stage aliases
+                            $site_alias =  $site->site . '.dev';
+                            $env = '.01dev';
+                            $aliases[$site_alias] = array();
+                            $aliases[$site_alias]['uri'] = $site->domain;
+                            $aliases[$site_alias]['parent'] = '@' . $siteID . $env;
+                            $aliases[$site_alias]['site'] = $site_alias;
 
-                        // Configure dev group
-                        $dev_group[] = '@' . $site_alias;
-                      }
+                            // Configure dev group
+                            $dev_group[] = '@' . $site_alias;
+                        }
 
-                      $aliases['allprod'] = array(
+                        $aliases['allprod'] = array(
                         'site' => $site->site,
                         'aliases' => $prod_group,
                         'env' => 'prod',
-                        'group' => TRUE
-                      );
+                        'group' => true
+                        );
 
-                      $aliases['allstage'] = array(
+                        $aliases['allstage'] = array(
                         'site' => $site->site,
                         'aliases' => $stage_group,
                         'env' => 'stage',
-                        'group' => TRUE
-                      );
-                      $aliases['alldev'] = array(
+                        'group' => true
+                        );
+                        $aliases['alldev'] = array(
                         'site' => $site->site,
                         'aliases' => $dev_group,
                         'env' => 'dev',
-                        'group' => TRUE
-                      );
+                        'group' => true
+                        );
                     }
                 } else {
                     $this->progressBar->clear();
@@ -222,7 +222,7 @@ class AcAliasesCommand extends CommandBase
         // Render our aliases.
         $aliasesRender = $twig->render('aliases.php.twig', array('aliases' => $aliases));
         $aliasesFileName = $this->drushAliasDir . '/' . $site_id . '.aliases.drushrc.php';
-        $writable = ( is_writable($aliasesFileName) ) ? TRUE : chmod($aliasesFileName, 0755);
+        $writable = ( is_writable($aliasesFileName) ) ? true : chmod($aliasesFileName, 0755);
         // Write to file.
         file_put_contents($aliasesFileName, $aliasesRender);
     }
