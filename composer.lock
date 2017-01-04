@@ -4,7 +4,6 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "8638250fab00f829971204f3802b5e67",
     "content-hash": "4efd416ae807858f1650f5d8a7058bfc",
     "packages": [
         {
@@ -47,7 +46,7 @@
             "keywords": [
                 "acquia"
             ],
-            "time": "2015-03-10 14:41:58"
+            "time": "2015-03-10T14:41:58+00:00"
         },
         {
             "name": "acquia/acquia-sdk-php-json",
@@ -88,7 +87,7 @@
             "keywords": [
                 "acquia"
             ],
-            "time": "2014-04-02 19:45:47"
+            "time": "2014-04-02T19:45:47+00:00"
         },
         {
             "name": "acquia/acquia-sdk-php-rest",
@@ -132,7 +131,7 @@
             "keywords": [
                 "acquia"
             ],
-            "time": "2015-03-05 15:31:15"
+            "time": "2015-03-05T15:31:15+00:00"
         },
         {
             "name": "dflydev/dot-access-data",
@@ -186,7 +185,7 @@
                 "dot",
                 "notation"
             ],
-            "time": "2015-08-13 03:51:18"
+            "time": "2015-08-13T03:51:18+00:00"
         },
         {
             "name": "guzzle/cache",
@@ -239,7 +238,7 @@
                 "zf"
             ],
             "abandoned": "guzzle/guzzle",
-            "time": "2014-01-08 21:24:51"
+            "time": "2014-01-08T21:24:51+00:00"
         },
         {
             "name": "guzzle/common",
@@ -284,7 +283,7 @@
                 "exception"
             ],
             "abandoned": "guzzle/guzzle",
-            "time": "2014-08-11 04:32:36"
+            "time": "2014-08-11T04:32:36+00:00"
         },
         {
             "name": "guzzle/http",
@@ -342,7 +341,7 @@
                 "http client"
             ],
             "abandoned": "guzzle/guzzle",
-            "time": "2014-08-11 04:32:36"
+            "time": "2014-08-11T04:32:36+00:00"
         },
         {
             "name": "guzzle/inflection",
@@ -391,7 +390,7 @@
                 "inflection"
             ],
             "abandoned": "guzzle/guzzle",
-            "time": "2013-06-11 00:24:07"
+            "time": "2013-06-11T00:24:07+00:00"
         },
         {
             "name": "guzzle/parser",
@@ -436,7 +435,7 @@
                 "url"
             ],
             "abandoned": "guzzle/guzzle",
-            "time": "2014-02-05 18:29:46"
+            "time": "2014-02-05T18:29:46+00:00"
         },
         {
             "name": "guzzle/service",
@@ -490,7 +489,7 @@
                 "webservice"
             ],
             "abandoned": "guzzle/guzzle",
-            "time": "2014-04-23 20:54:52"
+            "time": "2014-04-23T20:54:52+00:00"
         },
         {
             "name": "guzzle/stream",
@@ -544,7 +543,7 @@
                 "stream"
             ],
             "abandoned": "guzzle/guzzle",
-            "time": "2014-05-01 21:36:02"
+            "time": "2014-05-01T21:36:02+00:00"
         },
         {
             "name": "psr/log",
@@ -591,7 +590,7 @@
                 "psr",
                 "psr-3"
             ],
-            "time": "2016-10-10 12:19:37"
+            "time": "2016-10-10T12:19:37+00:00"
         },
         {
             "name": "symfony/config",
@@ -647,7 +646,7 @@
             ],
             "description": "Symfony Config Component",
             "homepage": "https://symfony.com",
-            "time": "2016-12-09 07:45:17"
+            "time": "2016-12-09T07:45:17+00:00"
         },
         {
             "name": "symfony/console",
@@ -710,7 +709,7 @@
             ],
             "description": "Symfony Console Component",
             "homepage": "https://symfony.com",
-            "time": "2016-12-11 14:34:22"
+            "time": "2016-12-11T14:34:22+00:00"
         },
         {
             "name": "symfony/debug",
@@ -767,7 +766,7 @@
             ],
             "description": "Symfony Debug Component",
             "homepage": "https://symfony.com",
-            "time": "2016-11-16 22:18:16"
+            "time": "2016-11-16T22:18:16+00:00"
         },
         {
             "name": "symfony/event-dispatcher",
@@ -827,7 +826,7 @@
             ],
             "description": "Symfony EventDispatcher Component",
             "homepage": "https://symfony.com",
-            "time": "2016-10-13 06:29:04"
+            "time": "2016-10-13T06:29:04+00:00"
         },
         {
             "name": "symfony/filesystem",
@@ -876,7 +875,7 @@
             ],
             "description": "Symfony Filesystem Component",
             "homepage": "https://symfony.com",
-            "time": "2016-10-18 04:28:30"
+            "time": "2016-10-18T04:28:30+00:00"
         },
         {
             "name": "symfony/polyfill-mbstring",
@@ -935,7 +934,7 @@
                 "portable",
                 "shim"
             ],
-            "time": "2016-11-14 01:06:16"
+            "time": "2016-11-14T01:06:16+00:00"
         },
         {
             "name": "symfony/process",
@@ -984,7 +983,7 @@
             ],
             "description": "Symfony Process Component",
             "homepage": "https://symfony.com",
-            "time": "2016-11-24 10:40:28"
+            "time": "2016-11-24T10:40:28+00:00"
         },
         {
             "name": "symfony/yaml",
@@ -1039,7 +1038,7 @@
             ],
             "description": "Symfony Yaml Component",
             "homepage": "https://symfony.com",
-            "time": "2016-12-10 10:07:06"
+            "time": "2016-12-10T10:07:06+00:00"
         },
         {
             "name": "tivie/php-os-detector",
@@ -1087,7 +1086,7 @@
                 "os",
                 "os detection"
             ],
-            "time": "2014-12-19 01:17:49"
+            "time": "2014-12-19T01:17:49+00:00"
         },
         {
             "name": "twig/twig",
@@ -1148,7 +1147,7 @@
             "keywords": [
                 "templating"
             ],
-            "time": "2016-12-23 11:06:22"
+            "time": "2016-12-23T11:06:22+00:00"
         },
         {
             "name": "vierbergenlars/php-semver",
@@ -1200,22 +1199,22 @@
                 "semver",
                 "versioning"
             ],
-            "time": "2015-05-02 19:28:54"
+            "time": "2015-05-02T19:28:54+00:00"
         }
     ],
     "packages-dev": [
         {
             "name": "doctrine/annotations",
-            "version": "v1.3.0",
+            "version": "v1.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/annotations.git",
-                "reference": "30e07cf03edc3cd3ef579d0dd4dd8c58250799a5"
+                "reference": "bd4461328621bde0ae6b1b2675fbc6aca4ceb558"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/annotations/zipball/30e07cf03edc3cd3ef579d0dd4dd8c58250799a5",
-                "reference": "30e07cf03edc3cd3ef579d0dd4dd8c58250799a5",
+                "url": "https://api.github.com/repos/doctrine/annotations/zipball/bd4461328621bde0ae6b1b2675fbc6aca4ceb558",
+                "reference": "bd4461328621bde0ae6b1b2675fbc6aca4ceb558",
                 "shasum": ""
             },
             "require": {
@@ -1270,7 +1269,7 @@
                 "docblock",
                 "parser"
             ],
-            "time": "2016-10-24 11:45:47"
+            "time": "2016-12-30T15:59:45+00:00"
         },
         {
             "name": "doctrine/lexer",
@@ -1324,7 +1323,7 @@
                 "lexer",
                 "parser"
             ],
-            "time": "2014-09-09 13:34:57"
+            "time": "2014-09-09T13:34:57+00:00"
         },
         {
             "name": "herrera-io/annotations",
@@ -1377,7 +1376,7 @@
                 "doctrine",
                 "tokenizer"
             ],
-            "time": "2014-02-03 17:34:08"
+            "time": "2014-02-03T17:34:08+00:00"
         },
         {
             "name": "herrera-io/box",
@@ -1437,7 +1436,7 @@
             "keywords": [
                 "phar"
             ],
-            "time": "2014-12-03 23:26:45"
+            "time": "2014-12-03T23:26:45+00:00"
         },
         {
             "name": "herrera-io/json",
@@ -1497,7 +1496,7 @@
                 "schema",
                 "validate"
             ],
-            "time": "2013-10-30 16:51:34"
+            "time": "2013-10-30T16:51:34+00:00"
         },
         {
             "name": "herrera-io/phar-update",
@@ -1554,7 +1553,7 @@
                 "phar",
                 "update"
             ],
-            "time": "2013-11-09 17:13:13"
+            "time": "2013-11-09T17:13:13+00:00"
         },
         {
             "name": "herrera-io/version",
@@ -1605,7 +1604,7 @@
                 "semantic",
                 "version"
             ],
-            "time": "2014-05-27 05:29:25"
+            "time": "2014-05-27T05:29:25+00:00"
         },
         {
             "name": "justinrainbow/json-schema",
@@ -1671,11 +1670,11 @@
                 "json",
                 "schema"
             ],
-            "time": "2016-01-25 15:43:01"
+            "time": "2016-01-25T15:43:01+00:00"
         },
         {
             "name": "kherge/amend",
-            "version": "dev-master",
+            "version": "3.0.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/box-project/amend.git",
@@ -1726,7 +1725,7 @@
                 "phar",
                 "update"
             ],
-            "time": "2016-04-05 18:59:28"
+            "time": "2016-04-05T18:59:28+00:00"
         },
         {
             "name": "kherge/box",
@@ -1793,7 +1792,7 @@
             "keywords": [
                 "phar"
             ],
-            "time": "2016-12-11 21:30:06"
+            "time": "2016-12-11T21:30:06+00:00"
         },
         {
             "name": "phine/exception",
@@ -1842,7 +1841,7 @@
             "keywords": [
                 "exception"
             ],
-            "time": "2013-08-27 17:43:25"
+            "time": "2013-08-27T17:43:25+00:00"
         },
         {
             "name": "phine/path",
@@ -1894,7 +1893,7 @@
                 "path",
                 "system"
             ],
-            "time": "2013-10-15 22:58:04"
+            "time": "2013-10-15T22:58:04+00:00"
         },
         {
             "name": "phpseclib/phpseclib",
@@ -1986,7 +1985,7 @@
                 "x.509",
                 "x509"
             ],
-            "time": "2016-10-04 00:57:04"
+            "time": "2016-10-04T00:57:04+00:00"
         },
         {
             "name": "seld/jsonlint",
@@ -2032,7 +2031,7 @@
                 "parser",
                 "validator"
             ],
-            "time": "2016-11-14 17:59:58"
+            "time": "2016-11-14T17:59:58+00:00"
         },
         {
             "name": "squizlabs/php_codesniffer",
@@ -2110,7 +2109,7 @@
                 "phpcs",
                 "standards"
             ],
-            "time": "2016-11-30 04:02:31"
+            "time": "2016-11-30T04:02:31+00:00"
         },
         {
             "name": "symfony/finder",
@@ -2159,7 +2158,7 @@
             ],
             "description": "Symfony Finder Component",
             "homepage": "https://symfony.com",
-            "time": "2016-12-13 09:39:43"
+            "time": "2016-12-13T09:39:43+00:00"
         },
         {
             "name": "tedivm/jshrink",
@@ -2205,7 +2204,7 @@
                 "javascript",
                 "minifier"
             ],
-            "time": "2015-07-04 07:35:09"
+            "time": "2015-07-04T07:35:09+00:00"
         }
     ],
     "aliases": [],
