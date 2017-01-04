@@ -135,32 +135,17 @@ class AcAliasesCommand extends CommandBase
                         foreach ($sites as $site) {
                             // Configure prod aliases
                             $site_alias =  $site->site . '.prod';
-                            $env = '.01live';
-                            $aliases[$site_alias] = array();
-                            $aliases[$site_alias]['uri'] = $site->domain;
-                            $aliases[$site_alias]['parent'] = '@' . $siteID . $env;
-                            $aliases[$site_alias]['site'] = $site_alias;
+                            $this->generateACSFAliases($aliases, $siteID, $site_alias, $site->domain, '.01live');
                             // Configure prod group
                             $prod_group[] = '@' . $site_alias;
                             // Configure stage aliases
                             $site_alias =  $site->site . '.stage';
-                            $env = '.01test';
-                            $aliases[$site_alias] = array();
-                            $aliases[$site_alias]['uri'] = $site->domain;
-                            $aliases[$site_alias]['parent'] = '@' . $siteID . $env;
-                            $aliases[$site_alias]['site'] = $site_alias;
-
+                            $this->generateACSFAliases($aliases, $siteID, $site_alias, $site->domain, '.01test');
                             // Configure stage group
                             $stage_group[] = '@' . $site_alias;
-
-                            // Configure stage aliases
+                            // Configure dev aliases
                             $site_alias =  $site->site . '.dev';
-                            $env = '.01dev';
-                            $aliases[$site_alias] = array();
-                            $aliases[$site_alias]['uri'] = $site->domain;
-                            $aliases[$site_alias]['parent'] = '@' . $siteID . $env;
-                            $aliases[$site_alias]['site'] = $site_alias;
-
+                            $this->generateACSFAliases($aliases, $siteID, $site_alias, $site->domain, '.01dev');
                             // Configure dev group
                             $dev_group[] = '@' . $site_alias;
                         }
@@ -214,6 +199,22 @@ class AcAliasesCommand extends CommandBase
         }
     }
 
+    protected function generateACSFAliases(&$aliases, $siteID, $site_alias, $domain, $env)
+    {
+      $parent = '@' . $siteID . $env;
+      switch ($env) {
+        case '.01dev':
+          $domain = str_replace($siteID, 'dev-' . $siteID, $domain);
+        break;
+        case '.01test':
+          $domain = str_replace($siteID, 'test-' . $siteID, $domain);
+        break;
+      }
+      $aliases[$site_alias]['uri'] = $domain;
+      $aliases[$site_alias]['parent'] = $parent;
+      $aliases[$site_alias]['site'] = $site_alias;
+      $aliases[$site_alias]['env'] = $env;
+    }
     protected function writeSiteAliases($site_id, $aliases)
     {
         // Load twig template
