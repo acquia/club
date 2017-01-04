@@ -7,7 +7,7 @@ if (!isset($drush_major_version)) {
 
 {% for alias in aliases %}
 {% if alias["parent"] %}
-// Site {{alias["site"]}}, environment prod, domain {{alias["uri"]}}
+// Site {{alias["site"]}}, environment {{alias["env"]}}, domain {{alias["uri"]}}
 $aliases['{{alias["site"]}}'] = array(
   'parent' => '{{alias["parent"]}}',
   'uri' => '{{alias["uri"]}}',
