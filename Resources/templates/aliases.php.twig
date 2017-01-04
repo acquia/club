@@ -7,10 +7,18 @@ if (!isset($drush_major_version)) {
 
 {% for alias in aliases %}
 {% if alias["parent"] %}
-// Site {{alias["domain"]}}
+// Site {{alias["site"]}}, environment prod, domain {{alias["uri"]}}
 $aliases['{{alias["site"]}}'] = array(
   'parent' => '{{alias["parent"]}}',
   'uri' => '{{alias["uri"]}}',
+);
+{% elseif alias["group"] %}
+$aliases['{{alias["env"]}}'] = array(
+  'site-list' => array(
+{% for groupalias in alias["aliases"] %}
+    '{{groupalias}}',
+{% endfor %}
+  ),
 );
 {% else %}
 // Site {{alias["ac-site"]}}, environment {{alias["env-name"]}}
