@@ -201,19 +201,19 @@ class AcAliasesCommand extends CommandBase
 
     protected function generateACSFAliases(&$aliases, $siteID, $site_alias, $domain, $env)
     {
-      $parent = '@' . $siteID . $env;
-      switch ($env) {
-        case '.01dev':
-          $domain = str_replace($siteID, 'dev-' . $siteID, $domain);
-        break;
-        case '.01test':
-          $domain = str_replace($siteID, 'test-' . $siteID, $domain);
-        break;
-      }
-      $aliases[$site_alias]['uri'] = $domain;
-      $aliases[$site_alias]['parent'] = $parent;
-      $aliases[$site_alias]['site'] = $site_alias;
-      $aliases[$site_alias]['env'] = $env;
+        $parent = '@' . $siteID . $env;
+        switch ($env) {
+            case '.01dev':
+                $domain = str_replace($siteID, 'dev-' . $siteID, $domain);
+                break;
+            case '.01test':
+                $domain = str_replace($siteID, 'test-' . $siteID, $domain);
+                break;
+        }
+        $aliases[$site_alias]['uri'] = $domain;
+        $aliases[$site_alias]['parent'] = $parent;
+        $aliases[$site_alias]['site'] = $site_alias;
+        $aliases[$site_alias]['env'] = $env;
     }
     protected function writeSiteAliases($site_id, $aliases)
     {
