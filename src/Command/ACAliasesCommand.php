@@ -65,10 +65,9 @@ class AcAliasesCommand extends CommandBase
         foreach ($sites as $site) {
             $this->progressBar->setMessage('Syncing: ' . $site);
             try {
-                $this->getSiteAliases($site);
+                $this->getSiteAliases($site, $errors);
             } catch (\Exception $e) {
-                $errors[] = "Could not fetch alias data for $site.";
-                $this->output->writeln($e->getMessage(), OutputInterface::VERBOSITY_VERBOSE);
+                $errors[] = "Could not fetch alias data for $site. Error: ". $e->getMessage();
             }
             $this->progressBar->advance();
         }
@@ -88,7 +87,7 @@ class AcAliasesCommand extends CommandBase
   /**
    * @param $site SiteNames[]
    */
-    protected function getSiteAliases($site)
+    protected function getSiteAliases($site, &$errors)
     {
         // Skip AC trex sites because the api breaks on them.
         $skip_site = false;
@@ -114,26 +113,77 @@ class AcAliasesCommand extends CommandBase
                 $docroot = '/var/www/html/' . $siteID . '.' . $envName . '/docroot';
 
                 $aliases[$envName] = array(
-                'env-name' => $envName,
-                'root' => $docroot,
-                'ac-site' => $siteID,
-                'ac-env' => $envName,
-                'ac-realm' => $siteRealm,
-                'uri' => $uri,
-                'remote-host' => $remoteHost,
-                'remote-user' => $remoteUser,
+                  'env-name' => $envName,
+                  'root' => $docroot,
+                  'ac-site' => $siteID,
+                  'ac-env' => $envName,
+                  'ac-realm' => $siteRealm,
+                  'uri' => $uri,
+                  'remote-host' => $remoteHost,
+                  'remote-user' => $remoteUser,
                 );
             }
             if ($siteRealm == 'enterprise-g1') {
                 $acsf_site_url = 'https://www.' . $siteID . '.acsitefactory.com';
                 if ($this->checkForACSFCredentials($siteID)) {
                     // @TODO: Ask the user if they want to update the credentials
-                    $sites = $this->getACSFAliases($siteID, $acsf_site_url);
-                    foreach ($sites as $site) {
-                        $aliases[$site->site] = array();
-                        $aliases[$site->site]['uri'] = $site->domain;
-                        $aliases[$site->site]['parent'] = '@' . $siteID . '.01_live';
-                        $aliases[$site->site]['site'] = $site->site;
+                    $sites = $this->getACSFAliases($siteID, $acsf_site_url, $errors);
+                    if (!empty($sites)) {
+                      $prod_group = array();
+                      $stage_group = array();
+                      $dev_group = array();
+                      foreach ($sites as $site) {
+                        // Configure prod aliases
+                        $site_alias =  $site->site . '.prod';
+                        $env = '.01live';
+                        $aliases[$site_alias] = array();
+                        $aliases[$site_alias]['uri'] = $site->domain;
+                        $aliases[$site_alias]['parent'] = '@' . $siteID . $env;
+                        $aliases[$site_alias]['site'] = $site_alias;
+                        // Configure prod group
+                        $prod_group[] = '@' . $site_alias;
+                        // Configure stage aliases
+                        $site_alias =  $site->site . '.stage';
+                        $env = '.01test';
+                        $aliases[$site_alias] = array();
+                        $aliases[$site_alias]['uri'] = $site->domain;
+                        $aliases[$site_alias]['parent'] = '@' . $siteID . $env;
+                        $aliases[$site_alias]['site'] = $site_alias;
+
+                        // Configure stage group
+                        $stage_group[] = '@' . $site_alias;
+
+                        // Configure stage aliases
+                        $site_alias =  $site->site . '.dev';
+                        $env = '.01dev';
+                        $aliases[$site_alias] = array();
+                        $aliases[$site_alias]['uri'] = $site->domain;
+                        $aliases[$site_alias]['parent'] = '@' . $siteID . $env;
+                        $aliases[$site_alias]['site'] = $site_alias;
+
+                        // Configure dev group
+                        $dev_group[] = '@' . $site_alias;
+                      }
+
+                      $aliases['allprod'] = array(
+                        'site' => $site->site,
+                        'aliases' => $prod_group,
+                        'env' => 'prod',
+                        'group' => TRUE
+                      );
+
+                      $aliases['allstage'] = array(
+                        'site' => $site->site,
+                        'aliases' => $stage_group,
+                        'env' => 'stage',
+                        'group' => TRUE
+                      );
+                      $aliases['alldev'] = array(
+                        'site' => $site->site,
+                        'aliases' => $dev_group,
+                        'env' => 'dev',
+                        'group' => TRUE
+                      );
                     }
                 } else {
                     $this->progressBar->clear();
@@ -147,19 +197,18 @@ class AcAliasesCommand extends CommandBase
                         $this->getACSFAliases($siteID, $acsf_site_url);
                     } else {
                         $config = $this->cloudApiConfig;
-                        $acsfConfig = array( "$siteID" => array(
-                        'username' => '',
-                        'apikey' => '',
-                        'enabled' => false
-                        )
+                        $acsfConfig = array(
+                          "$siteID" => array(
+                            'username' => '',
+                            'apikey' => '',
+                            'enabled' => false
+                          )
                         );
                         // @todo this fails when "n" is selected
                         $config = array_merge_recursive($config, $acsfConfig);
                         $this->writeCloudApiConfig($config);
                     }
                 }
-
-                $this->progressBar->display();
             }
             $this->writeSiteAliases($siteID, $aliases);
         }
@@ -173,11 +222,12 @@ class AcAliasesCommand extends CommandBase
         // Render our aliases.
         $aliasesRender = $twig->render('aliases.php.twig', array('aliases' => $aliases));
         $aliasesFileName = $this->drushAliasDir . '/' . $site_id . '.aliases.drushrc.php';
+        $writable = ( is_writable($aliasesFileName) ) ? TRUE : chmod($aliasesFileName, 0755);
         // Write to file.
         file_put_contents($aliasesFileName, $aliasesRender);
     }
 
-    protected function getACSFAliases($siteID, $acsf_site_url)
+    protected function getACSFAliases($siteID, $acsf_site_url, &$errors)
     {
 
         $username = $this->cloudApiConfig[$siteID]['username'];
@@ -195,7 +245,7 @@ class AcAliasesCommand extends CommandBase
             }
             return $sitesList['sites'];
         } catch (\Exception $e) {
-            $this->output->writeln("<error>Failed to load ACSF sites.</error>");
+            $errors[] = "Failed to fetch " . $siteID . " aliases: " . $e->getMessage();
             return false;
         }
     }
@@ -223,11 +273,12 @@ class AcAliasesCommand extends CommandBase
         $apikey = $this->questionHelper->ask($this->input, $this->output, $privateKeyQuestion);
 
         $config = $this->cloudApiConfig;
-        $acsfConfig = array( "$siteId" => array(
-          'username' => $username,
-          'apikey' => $apikey,
-          'enabled' => true
-        )
+        $acsfConfig = array(
+          "$siteId" => array(
+            'username' => $username,
+            'apikey' => $apikey,
+            'enabled' => true
+          )
         );
         $this->cloudApiConfig = array_merge_recursive($config, $acsfConfig);
         $this->writeCloudApiConfig($this->cloudApiConfig);
