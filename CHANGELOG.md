@@ -1,5 +1,13 @@
 # Change Log
 
+## [0.4](https://github.com/acquia/club/tree/0.4) (2017-01-04)
+[Full Changelog](https://github.com/acquia/club/compare/0.3...0.4)
+
+**Fixed bugs:**
+
+- Twig aliases file incorrectly comments as all aliases being prod. [\#20](https://github.com/acquia/club/issues/20)
+- Aliases for ACSF URI's are incorrectly made for dev and stage [\#21](https://github.com/acquia/club/issues/21)
+
 ## [0.3](https://github.com/acquia/club/tree/0.3) (2017-01-04)
 [Full Changelog](https://github.com/acquia/club/compare/0.2...0.3)
 
