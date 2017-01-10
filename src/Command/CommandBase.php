@@ -84,8 +84,6 @@ abstract class CommandBase extends Command
         $this->drushAliasDir = $_SERVER['HOME'] . '/.drush';
         $this->cloudConfFileName = 'cloudapi.conf';
         $this->cloudConfFilePath = $this->cloudConfDir . '/' . $this->cloudConfFileName;
-        $this->cloudApiConfig = $this->loadCloudApiConfig();
-        $this->setCloudApiClient($this->cloudApiConfig['email'], $this->cloudApiConfig['key']);
     }
 
   /**
@@ -148,7 +146,6 @@ abstract class CommandBase extends Command
             $loaderResolver = new LoaderResolver(array(new JsonFileLoader($locator)));
             $delegatingLoader = new DelegatingLoader($loaderResolver);
             $config = $delegatingLoader->load($file);
-
             return $config;
         } catch (\Exception $e) {
             return [];

@@ -45,7 +45,8 @@ class AcAliasesCommand extends CommandBase
             return 1;
         }
 
-        $this->cloudApiClient = $this->getCloudApiClient();
+        $this->cloudApiConfig = $this->loadCloudApiConfig();
+        $this->setCloudApiClient($this->cloudApiConfig['email'], $this->cloudApiConfig['key']);
 
         $this->output->writeln("<info>Gathering sites list from Acquia Cloud.</info>");
         $sites = (array) $this->cloudApiClient->sites();
