@@ -60,6 +60,7 @@ class ProjectConfiguration implements ConfigurationInterface
                 ->end()
                 ->arrayNode('ingredients')
                     ->info('A flat array of ingredients. E.g. acquia-blog.')
+                    ->prototype('scalar')
                 ->end()
             ->end()
         ;
