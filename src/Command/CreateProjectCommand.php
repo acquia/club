@@ -189,22 +189,22 @@ class CreateProjectCommand extends CommandBase
 
         $question = new ConfirmationQuestion('<question>Do you want to add default ingredients?</question> <info>[yes]</info> ', true);
         $ingredients = $this->questionHelper->ask($this->input, $this->output, $question);
-        if ($ingredients || !empty($answers['features'])) {
+        if ($ingredients || !empty($answers['ingredients'])) {
             $done_value = 'done';
             $available_ingredients_config = Yaml::parse(file_get_contents(__DIR__ . '/../../Resources/available_ingredients.yml'));
             $available_ingredients = $available_ingredients_config['available_ingredients'];
             array_unshift($available_ingredients, $done_value);
             $i = 0;
-            $answers['features'] = [];
+            $answers['ingredients'] = [];
             do {
                 $i++;
-                $available_ingredients = array_diff($available_ingredients, $answers['features']);
+                $available_ingredients = array_diff($available_ingredients, $answers['ingredients']);
                 $question = new ChoiceQuestion("<question>Choose an ingredient: </question> <info>Choose [0] $done_value to finish.</info>", $available_ingredients);
-                $answers['features'][$i] = $this->questionHelper->ask($this->input, $this->output, $question);
-                $this->output->writeln("<info>" . $answers['features'][$i] . " added</info>");
-            } while ($answers['features'][$i] != $done_value);
-            if (($key = array_search($done_value, $answers['features'])) !== false) {
-                unset($answers['features'][$key]);
+                $answers['ingredients'][$i] = $this->questionHelper->ask($this->input, $this->output, $question);
+                $this->output->writeln("<info>" . $answers['ingredients'][$i] . " added</info>");
+            } while ($answers['ingredients'][$i] != $done_value);
+            if (($key = array_search($done_value, $answers['ingredients'])) !== false) {
+                unset($answers['ingredients'][$key]);
             }
         }
 
@@ -226,9 +226,9 @@ class CreateProjectCommand extends CommandBase
 
         $this->updateProjectYml($answers);
 
-        if (!empty($answers['features'])) {
-            foreach ($answers['features'] as $feature) {
-                $this->executeCommand("composer require acquia-pso/$feature --no-update", $project_dir);
+        if (!empty($answers['ingredients'])) {
+            foreach ($answers['ingredients'] as $ingredient) {
+                $this->executeCommand("composer require acquia-pso/$ingredient --no-update", $project_dir);
             }
             $this->executeCommand("composer update", $project_dir);
         }
@@ -236,8 +236,8 @@ class CreateProjectCommand extends CommandBase
         $lightning_extend_filename = $project_dir . '/docroot/sites/default/lightning.extend.yml';
         $this->fs->copy($project_dir . '/docroot/profiles/contrib/lightning/lightning.extend.yml', $lightning_extend_filename);
         $lightning_extend = Yaml::parse(file_get_contents($lightning_extend_filename));
-        if (!empty($answers['features'])) {
-            $lightning_extend['modules'] = $answers['features'];
+        if (!empty($answers['ingredients'])) {
+            $lightning_extend['modules'] = $answers['ingredients'];
         }
 
         file_put_contents($lightning_extend_filename, Yaml::dump($lightning_extend));

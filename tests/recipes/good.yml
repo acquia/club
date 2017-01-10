@@ -3,7 +3,7 @@ machine_name: "test_project"
 prefix: "TP"
 vm: false
 ingredients:
-  - acquia-blog
+  - acquia_blog
 ci:
   provider: pipelines
 ac:
