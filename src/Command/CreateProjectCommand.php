@@ -189,7 +189,7 @@ class CreateProjectCommand extends CommandBase
 
         $question = new ConfirmationQuestion('<question>Do you want to add default ingredients?</question> <info>[yes]</info> ', true);
         $ingredients = $this->questionHelper->ask($this->input, $this->output, $question);
-        if ($ingredients) {
+        if ($ingredients || !empty($answers['features'])) {
             $done_value = 'done';
             $available_ingredients_config = Yaml::parse(file_get_contents(__DIR__ . '/../../Resources/available_ingredients.yml'));
             $available_ingredients = $available_ingredients_config['available_ingredients'];
