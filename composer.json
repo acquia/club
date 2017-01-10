@@ -25,11 +25,15 @@
     "autoload": {
         "psr-4": {"Acquia\\Club\\": "src/"}
     },
+    "autoload-dev": {
+        "psr-4": {"Acquia\\Club\\Tests\\": "tests/src/"}
+    },
     "bin": [
         "bin/club"
     ],
     "require-dev": {
         "kherge/box": "^2.7",
+        "phpunit/phpunit": "^5.5.4",
         "squizlabs/php_codesniffer": "^2.7"
     }
 }

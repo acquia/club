@@ -1,0 +1,9 @@
+<!-- phpunit.xml.dist -->
+<phpunit>
+    <testsuites>
+        <testsuite name="Club Test Suite">
+            <directory>tests/phpunit</directory>
+        </testsuite>
+    </testsuites>
+
+</phpunit>
