@@ -26,8 +26,12 @@ class CreateProjectCommandTest extends TestBase
 
         $command = $this->application->find('create-project');
         $commandTester = new CommandTester($command);
-        // Create new project now?
-        $commandTester->setInputs(['yes']);
+        $commandTester->setInputs([
+            // Create new project now?
+            'yes',
+            // Do you want to push this to an Acquia Cloud subscription?
+            'no',
+        ]);
         $commandTester->execute(array(
             'command'  => $command->getName(),
             '--recipe' => 'tests/recipes/good.yml'
@@ -98,10 +102,6 @@ class CreateProjectCommandTest extends TestBase
         $this->assertProjectFileNotExists('box/config.yml');
         $this->assertProjectFileNotExists('VagrantFile');
         $this->assertContains('Your project was created in', $output);
-    }
-
-    public function testDeleteExistingDir() {
-        // Uh oh. The destination directory already exists.
     }
 
     /**
