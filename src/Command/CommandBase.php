@@ -137,12 +137,12 @@ abstract class CommandBase extends Command
     protected function loadCloudApiConfigFile()
     {
         $config_dirs = [
-        $_SERVER['HOME'] . '/.acquia',
+        $_SERVER['HOME'] . $this->cloudConfDir,
         ];
         $locator = new FileLocator($config_dirs);
 
         try {
-            $file = $locator->locate('cloudapi.conf', null, true);
+            $file = $locator->locate($this->cloudConfFileName, null, true);
             $loaderResolver = new LoaderResolver(array(new JsonFileLoader($locator)));
             $delegatingLoader = new DelegatingLoader($loaderResolver);
             $config = $delegatingLoader->load($file);
