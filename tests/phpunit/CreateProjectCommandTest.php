@@ -59,34 +59,36 @@ class CreateProjectCommandTest extends TestBase
     /**
      * Tests the 'create-project' command.
      */
-    public function XtestCreateProject()
+    public function testCreateProject()
     {
         $this->application->add(new CreateProjectCommand());
 
         $command = $this->application->find('create-project');
         $commandTester = new CommandTester($command);
-        // Project title (human readable):
-        $commandTester->setInputs(['Test Project']);
-        // Project machine name:
-        $commandTester->setInputs([$this->machine_name]);
-        // Project prefix:
-        $commandTester->setInputs(['TP']);
-        // Do you want to create a VM?
-        $commandTester->setInputs(['no']);
-        // Do you want to use Continuous Integration?
-        $commandTester->setInputs(['yes']);
-        // Choose a Continuous Integration provider:
-        $commandTester->setInputs(['pipelines']);
-        // Do you want to add default ingredients?
-        $commandTester->setInputs(['yes']);
-        // Choose an ingredient: (acquia_blog)
-        $commandTester->setInputs(['1']);
-        // Choose an ingredient: (done)
-        $commandTester->setInputs(['0']);
-        // Create new project now?
-        $commandTester->setInputs(['yes']);
-        // Do you want to push this to an Acquia Cloud subscription?
-        $commandTester->setInputs(['no']);
+        $commandTester->setInputs([
+          // Project title (human readable):
+          'Test Project',
+          // Project machine name:
+          $this->machine_name,
+          // Project prefix:
+          'TP',
+          // Do you want to create a VM?
+          'no',
+          // Do you want to use Continuous Integration?
+          'yes',
+          // Choose a Continuous Integration provider:
+          'pipelines',
+          // Do you want to add default ingredients?
+          'yes',
+          // Choose an ingredient: (acquia_blog)
+          '1',
+          // Choose an ingredient: (done)
+          '0',
+          // Create new project now?
+          'yes',
+          // Do you want to push this to an Acquia Cloud subscription?
+          'no'
+        ]);
 
         $commandTester->execute(array(
             'command'  => $command->getName(),
