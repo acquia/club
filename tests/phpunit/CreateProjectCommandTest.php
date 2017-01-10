@@ -5,9 +5,13 @@ namespace Acquia\Club\Tests\Command;
 use Acquia\Club\Command\CreateProjectCommand;
 use Acquia\Club\Tests\TestBase;
 use Symfony\Component\Console\Tester\CommandTester;
+use Symfony\Component\Filesystem\Filesystem;
 
 class CreateProjectCommandTest extends TestBase
 {
+
+    /** @var Filesystem */
+    protected $fs;
 
     protected $machine_name = 'test_project';
 
@@ -17,7 +21,8 @@ class CreateProjectCommandTest extends TestBase
 
         $test_dir = __DIR__ . '/../../test_project';
         if (file_exists($test_dir)) {
-            unlink($test_dir);
+            $this->fs = new Filesystem();
+            $this->fs->remove($test_dir);
         }
     }
 
