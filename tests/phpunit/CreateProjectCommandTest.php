@@ -11,6 +11,16 @@ class CreateProjectCommandTest extends TestBase
 
     protected $machine_name = 'test_project';
 
+    public function setUp()
+    {
+        parent::setUp();
+
+        $test_dir = __DIR__ . '/../../test_project';
+        if (file_exists($test_dir)) {
+            unlink($test_dir);
+        }
+    }
+
     public function testCreateProjectRecipe() {
         $this->application->add(new CreateProjectCommand());
 
