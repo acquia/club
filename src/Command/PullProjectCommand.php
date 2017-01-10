@@ -63,7 +63,7 @@ class PullProjectCommand extends CommandBase
             $this->verifyBltVersion($composer_lock);
         } else {
             $this->output->writeln("<error>No composer.lock file was found in the repository. Is this BLT project?");
-            exit(1);
+            return 1;
         }
 
         $this->output->writeln(
@@ -147,7 +147,7 @@ class PullProjectCommand extends CommandBase
                     $this->output->writeln(
                         "<error>This project's version of BLT does not satisfy the required version constraint of $constraint."
                     );
-                    exit(1);
+                    return 1;
                 }
 
                 return true;
@@ -155,6 +155,6 @@ class PullProjectCommand extends CommandBase
         }
 
         $this->output->writeln("<error>acquia/blt was not found in this project's composer.lock file.");
-        exit(1);
+        return 1;
     }
 }

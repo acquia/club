@@ -5,5 +5,7 @@
             <directory>tests/phpunit</directory>
         </testsuite>
     </testsuites>
-
+    <php>
+        <const name="PHPUNIT_CLUB" value="true"/>
+    </php>
 </phpunit>

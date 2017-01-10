@@ -93,7 +93,7 @@ abstract class CommandBase extends Command
    */
     protected function checkXdebug()
     {
-        if (extension_loaded('xdebug')) {
+        if (extension_loaded('xdebug') && !defined('PHPUNIT_CLUB')) {
             $this->output->writeln(
                 "<comment>You have xDebug enabled. This will make everything very slow. You should really disable it.</comment>"
             );
@@ -101,7 +101,7 @@ abstract class CommandBase extends Command
             $continue = $this->questionHelper->ask($this->input, $this->output, $question);
 
             if (!$continue) {
-                exit(1);
+                return 1;
             }
         }
     }
@@ -117,7 +117,7 @@ abstract class CommandBase extends Command
             $formattedBlock = $this->formatter->formatBlock($errorMessages, 'error');
             $this->output->writeln($formattedBlock);
 
-            exit(1);
+            return 1;
         }
     }
 
@@ -284,7 +284,7 @@ abstract class CommandBase extends Command
                 $this->output->writeln(
                     "<comment>Please choose a different machine name for your project, or change directories.</comment>"
                 );
-                exit(1);
+                return 1;
             }
         }
     }
