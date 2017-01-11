@@ -71,6 +71,7 @@ BLT is a project-specific tool (not standalone). It is intended to be a dependen
 | Characteristic                         | BLT | Club |
 |----------------------------------------|-----|------|
 | Standalone, installed to local machine |     |  x   |
+| Works outside of project context       |     |  x   |
 | Multple versions per machine           |  x  |      |
 | Committed to project codebase          |  x  |      |
 | Managed via Composer                   |  x  |      |
