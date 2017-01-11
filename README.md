@@ -1,5 +1,7 @@
 [![Build Status](https://travis-ci.com/acquia/club.svg?token=eFBAT6vQ9cqDh1Sed5Mw&branch=master)](https://travis-ci.com/acquia/club)
 
+**Club does not currently have a stable release. It should be considered experimental.**
+
 # Club: Command Line Utility for BLT
 
 `club` is a command line utility for managing BLT and accessing Acquia cloud resources.
@@ -57,6 +59,22 @@ For the following commands to work, you will need access to your Acquia Cloud AP
 - `club ac-aliases` will generate all of your Acquia Cloud site subscription aliases. If you have Acquia Cloud SIte Factory, it will also generate all of your aliases for all of your sites on your factory.
 - `club create-project` will ask various questions, ensure that certain settings are made, build a new BLT project, build a local VM with your new site and push to Acquia cloud if you want.
 - `club pull-project` will pull an existing Acquia Cloud cloud to your local, build it in a vm, and sync files and dabatases if needed.
+
+## FAQ
+
+#### What is the difference between Club and BLT?
+
+Club is a standalone executable tool that is used to create or clone existing BLT-based projects. Exactly one version of Club is installed per machine. It is not intended to be a dependency of a Drupal application, and it should never be committed to a codebase.
+
+BLT is a project-specific tool (not standalone). It is intended to be a dependency of a Drupal application. You may have multiple projects, each using a different version of BLT, on one machine.
+
+| Characteristic                         | BLT | Club |
+|----------------------------------------|-----|------|
+| Standalone, installed to local machine |     |  x   |
+| Multple versions per machine           |  x  |      |
+| Committed to project codebase          |  x  |      |
+| Managed via Composer                   |  x  |      |
+| Managed via Homebrew                   |     |  x   | 
 
 ## Contributing to Club
 
