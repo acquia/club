@@ -92,10 +92,7 @@ class CreateProjectCommandTest extends TestBase
 
         $commandTester->execute(array(
             'command'  => $command->getName(),
-        ), [
-            // 'interactive' => true,
-            'decorated' => false,
-        ]);
+        ));
 
         $status_code = $commandTester->getStatusCode();
         $this->assertEquals($status_code, 0, "The command create-project exited with a non-zero code: " . $commandTester->getDisplay());

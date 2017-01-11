@@ -12,7 +12,6 @@ use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Process\Process;
-use Symfony\Component\Yaml\Yaml;
 use Acquia\Cloud\Api\CloudApiClient;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Console\Command\Command;
@@ -28,41 +27,47 @@ use Symfony\Component\Console\Question\Question;
 abstract class CommandBase extends Command
 {
     /**
-   * @var string
-   */
+     * @var string
+     */
     protected $drushAliasDir;
     /** @var CloudApiClient  */
     protected $cloudApiClient;
     /**
-   * @var string
-   */
+     * @var string
+     */
     protected $cloudConfDir;
     /**
-   * @var string
-   */
+     * @var string
+     */
     protected $cloudConfFileName;
     /**
-   * @var string
-   */
+     * @var string
+     */
     protected $cloudConfFilePath;
     /**
-   * @var array
-   */
+     * @var array
+     */
     protected $cloudApiConfig;
     /** @var Filesystem */
     protected $fs;
     /**
-   * @var InputInterface
-   */
+     * @var InputInterface
+     */
     protected $input;
     /**
-   * @var OutputInterface
-   */
+     * @var OutputInterface
+     */
     protected $output;
     /** @var QuestionHelper */
     protected $questionHelper;
-    /** @var FormatterHelper */
+    /**
+     * @var FormatterHelper
+     */
     protected $formatter;
+    /**
+     * @var LocalEnvironmentFacade
+     */
+    protected $localEnvironment;
 
   /**
    * Initializes the command just after the input has been validated.
@@ -84,26 +89,53 @@ abstract class CommandBase extends Command
         $this->drushAliasDir = $_SERVER['HOME'] . '/.drush';
         $this->cloudConfFileName = 'cloudapi.conf';
         $this->cloudConfFilePath = $this->cloudConfDir . '/' . $this->cloudConfFileName;
+        $this->localEnvironment = new LocalEnvironmentFacade();
     }
 
-  /**
-   * @return string
-   */
-    protected function checkXdebug()
+    /**
+     * Checks whether xDebug is enabled. If so, prompts user to continue.
+     *
+     * @return bool
+     *   Returns TRUE if user chose not to continue, FALSE if xDebug is not
+     *   enabled.
+     */
+    public function checkXdebug()
     {
-        if (extension_loaded('xdebug') && !defined('PHPUNIT_CLUB')) {
-            $this->output->writeln(
-                "<comment>You have xDebug enabled. This will make everything very slow. You should really disable it.</comment>"
-            );
-            $question = new ConfirmationQuestion('<comment>Do you want to continue?</comment> ', true);
-            $continue = $this->questionHelper->ask($this->input, $this->output, $question);
+        // if ($this->localEnvironment->isPhpExtensionLoaded('xdebug') && !defined('PHPUNIT_CLUB')) {
+        if (!$this->localEnvironment->isPhpExtensionLoaded('xdebug')) {
+            return false;
+        }
 
-            if (!$continue) {
-                return 1;
-            }
+        $this->output->writeln(
+            "<comment>You have xDebug enabled. This will make everything very slow. You should really disable it.</comment>"
+        );
+
+        if (!($this->askContinue())) {
+            return 1;
         }
     }
 
+    /**
+     * @return bool
+     */
+    protected function askContinue()
+    {
+        $question = new ConfirmationQuestion(
+            '<comment>Do you want to continue?</comment> ',
+            true
+        );
+        $continue = $this->questionHelper->ask(
+            $this->input,
+            $this->output,
+            $question
+        );
+
+        return $continue;
+    }
+
+    /**
+     * @return int
+     */
     protected function checkCwd()
     {
         if ($this->fs->exists('.git')) {
@@ -176,6 +208,11 @@ abstract class CommandBase extends Command
         $this->writeCloudApiConfig($config);
     }
 
+    /**
+     * @param $cloud_api_client
+     *
+     * @return string
+     */
     protected function askWhichCloudSite($cloud_api_client)
     {
         $question = new ChoiceQuestion(
