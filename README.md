@@ -76,6 +76,16 @@ BLT is a project-specific tool (not standalone). It is intended to be a dependen
 | Managed via Composer                   |  x  |      |
 | Managed via Homebrew                   |     |  x   | 
 
+## Why aren't Club and BLT the same tool?
+
+It's not feasible to combine Club and BLT at this time. Club creates projects. BLT is one part of the created project.
+
+You can execute a Club command outside the context of a Drupal application directory. Conversely, BLT requires a Drupal application directory.
+
+Some tools (e.g., Drush) have worked around similar issues by allowing you to have a "global" version of Drush on your machine in addition to a project-specific version. The global version defers to the project-specific version by way of a separate "launcher" layer.
+
+This is helpful, but often leads to confusion. It's possible, but unlikely, that we'll refactor BLT to behave in this way at some point in the future.
+
 ## Contributing to Club
 
 Please see [CONTRIBUTING.md](CONTRIBUTING.md)
