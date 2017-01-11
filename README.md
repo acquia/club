@@ -76,7 +76,7 @@ BLT is a project-specific tool (not standalone). It is intended to be a dependen
 | Managed via Composer                   |  x  |      |
 | Managed via Homebrew                   |     |  x   | 
 
-## Why aren't Club and BLT the same tool?
+#### Why aren't Club and BLT the same tool?
 
 It's not feasible to combine Club and BLT at this time. Club creates projects. BLT is one part of the created project.
 
