@@ -10,13 +10,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 class ExampleCommand extends CommandBase {
 
     /**
-     * @param $local_environment
-     */
-    public function setLocalEnvironmentFacade($local_environment) {
-        $this->localEnvironment = $local_environment;
-    }
-
-    /**
      * @param \Symfony\Component\Console\Output\OutputInterface $output
      */
     public function setOutput(OutputInterface $output) {

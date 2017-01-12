@@ -69,7 +69,20 @@ abstract class CommandBase extends Command
      */
     protected $localEnvironment;
 
-  /**
+    /**
+     * CommandBase constructor.
+     *
+     * @param \Acquia\Club\Command\LocalEnvironmentFacade $localEnvironmentFacade
+     */
+    public function __construct(LocalEnvironmentFacade $localEnvironmentFacade)
+    {
+        $name = self::class;
+        parent::__construct($name);
+
+        $this->localEnvironment = $localEnvironmentFacade;
+    }
+
+    /**
    * Initializes the command just after the input has been validated.
    *
    * This is mainly useful when a lot of commands extends one main command
@@ -89,7 +102,6 @@ abstract class CommandBase extends Command
         $this->drushAliasDir = $_SERVER['HOME'] . '/.drush';
         $this->cloudConfFileName = 'cloudapi.conf';
         $this->cloudConfFilePath = $this->cloudConfDir . '/' . $this->cloudConfFileName;
-        $this->localEnvironment = new LocalEnvironmentFacade();
     }
 
     /**
