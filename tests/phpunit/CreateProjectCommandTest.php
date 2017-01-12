@@ -27,7 +27,7 @@ class CreateProjectCommandTest extends TestBase
     }
 
     public function testCreateProjectRecipe() {
-        $this->application->add(new CreateProjectCommand());
+        $this->application->add(new CreateProjectCommand($this->local_environment_facade));
 
         $command = $this->application->find('create-project');
         $commandTester = new CommandTester($command);
@@ -61,7 +61,7 @@ class CreateProjectCommandTest extends TestBase
      */
     public function testCreateProject()
     {
-        $this->application->add(new CreateProjectCommand());
+        $this->application->add(new CreateProjectCommand($this->local_environment_facade));
 
         $command = $this->application->find('create-project');
         $commandTester = new CommandTester($command);
