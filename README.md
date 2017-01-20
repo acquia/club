@@ -37,7 +37,7 @@ brew install acquia/tools/club
 ### Manual phar install
 
 ```
-curl -OL http://github.com/acquia/club/releases/download/0.1/club.phar
+curl -OL http://github.com/acquia/club/releases/download/0.4/club.phar
 chmod u+x club.phar
 mv club.phar /usr/local/bin/club
 ```
