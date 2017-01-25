@@ -35,8 +35,7 @@ $aliases['{{alias["ac-env"]}}'] = array(
   )
 );
 $aliases['{{alias["ac-env"]}}.livedev'] = array(
-  'parent' => '@{{alias["ac-site"]}}.{{alias["ac-env"]}}',
   'root' => '/mnt/gfs/{{alias["ac-site"]}}.{{alias["ac-env"]}}/livedev/docroot',
-);
+) + $aliases['{{alias["ac-env"]}}'];
 {% endif %}
 {% endfor %}
