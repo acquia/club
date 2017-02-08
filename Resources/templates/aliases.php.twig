@@ -1,8 +1,7 @@
 <?php
 
 if (!isset($drush_major_version)) {
-  $drush_version_components = explode('.', DRUSH_VERSION);
-  $drush_major_version = $drush_version_components[0];
+  list($drush_major_version) = explode('.', DRUSH_VERSION);
 }
 
 {% for alias in aliases %}
