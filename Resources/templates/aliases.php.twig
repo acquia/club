@@ -1,12 +1,17 @@
 <?php
 
+/**
+ * @file
+ * Drush site-alias configuration.
+ */
+
 if (!isset($drush_major_version)) {
   list($drush_major_version) = explode('.', DRUSH_VERSION);
 }
 
 {% for alias in aliases %}
 {% if alias["parent"] %}
-// Site {{alias["site"]}}, environment {{alias["env"]}}, domain {{alias["uri"]}}
+// Site {{alias["site"]}}, environment {{alias["env"]}}, domain {{alias["uri"]}}.
 $aliases['{{alias["site"]}}'] = array(
   'parent' => '{{alias["parent"]}}',
   'uri' => '{{alias["uri"]}}',
@@ -20,7 +25,7 @@ $aliases['{{alias["env"]}}'] = array(
   ),
 );
 {% else %}
-// Site {{alias["ac-site"]}}, environment {{alias["env-name"]}}
+// Site {{alias["ac-site"]}}, environment {{alias["env-name"]}}.
 $aliases['{{alias["ac-env"]}}'] = array(
   'root' => '{{alias["root"]}}',
   'ac-site' => '{{alias["ac-site"]}}',
@@ -31,7 +36,7 @@ $aliases['{{alias["ac-env"]}}'] = array(
   'remote-user' => '{{alias["remote-user"]}}',
   'path-aliases' => array(
     '%drush-script' => 'drush' . $drush_major_version,
-  )
+  ),
 );
 $aliases['{{alias["ac-env"]}}.livedev'] = array(
   'parent' => '@{{alias["ac-site"]}}.{{alias["ac-env"]}}',
