@@ -1,11 +1,9 @@
 <?php
 
-{% for alias in aliases|slice(0,1) %}
 /**
  * @file
- * Drush site-alias configuration for {{ aliases["ac-site"] }}.
+ * Drush site-alias configuration.
  */
-{% endfor %}
 
 if (!isset($drush_major_version)) {
   $drush_version_components = explode('.', DRUSH_VERSION);
