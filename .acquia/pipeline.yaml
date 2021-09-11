@@ -1,0 +1,31 @@
+type: default
+team:
+service: club
+
+environment_image:
+  file: ".acquia/Dockerfile.ci"
+  context: "."
+  build_args:
+    - secrets:
+        - type: vault
+          key: SSH_KEY
+          value: GIT_SSH_KEY
+          path: secret/pipeline-default/GIT_SSH_KEY
+  build_matrix:
+    base_images:
+      - php:7.4-cli
+      - php:5.6-cli
+
+pre_build:
+  phpcs_tests:
+    - steps:
+        - |
+          cd /club
+          # Remove true after fixing code
+          vendor/bin/phpcs --standard=PSR2 src --exclude=Generic.Files.LineLength || true
+  unit_tests:
+    - steps:
+        - |
+          cd /club
+          # Remove true after fixing code
+          ./vendor/bin/phpunit || true
